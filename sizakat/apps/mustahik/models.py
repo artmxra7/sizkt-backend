@@ -11,7 +11,7 @@ class Mustahik(models.Model):
         YATIM = ('YATIM', 'Yatim')
 
     name = models.CharField(max_length=32)
-    no_ktp = models.CharField(max_length=32)
+    no_ktp = models.CharField(max_length=32, unique=True)
     phone = models.CharField(max_length=32, blank=True)
     address = models.TextField()
     province = models.CharField(max_length=32)
