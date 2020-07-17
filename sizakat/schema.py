@@ -2,13 +2,14 @@ import graphene
 
 from graphene_django import DjangoObjectType
 from .apps.mustahik.mutations import MustahikMutation
+from .apps.mustahik.query import MustahikQuery
 
 ABOUT = 'Si Zakat merupakan sistem informasi untuk membantu masjid dalam \
 mengelola transaksi zakat. Sistem ini dibuat oleh tim lab 1231, \
 yang dipimpin oleh Prof. Dr. Wisnu Jatmiko.'
 
 
-class Query(graphene.ObjectType):
+class Query(MustahikQuery, graphene.ObjectType):
     about = graphene.String()
 
     def resolve_about(self, info):

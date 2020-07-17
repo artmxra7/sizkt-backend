@@ -159,3 +159,77 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
         self.assertNotEqual(mustahik.description, old_desc)
         self.assertEqual(mustahik.description, new_desc)
+
+    def test_query_mustahik_should_return_list_of_mustahiks(self):
+        response = self.query(
+        '''
+            query mustahiksQuery{
+                mustahiks {
+                    id,
+                    name
+                }
+            }
+        ''',
+        op_name='mustahiksQuery'
+        )
+
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahiks']), 1)
+        self.assertEqual(content['data']['mustahiks'][0]['name'], 'mustahik')
+
+    def test_query_mustahiks_if_statuses_is_set_should_return_list_of_mustahiks_with_coresponding_status(self):
+        Mustahik.objects.create(
+            name='test',
+            no_ktp='11751234567890',
+            phone='081234567890',
+            address='Jalan raya depok',
+            province='Jawa Barat',
+            regency='Depok',
+            rt='003',
+            rw='002',
+            birthdate=date(1987, 6, 5),
+            status=Mustahik.Status.YATIM,
+            family_size=4,
+            description='desc'
+        )
+
+        response = self.query(
+            '''
+                query mustahiksQuery($statuses: [String]) {
+                    mustahiks(statuses: $statuses) {
+                        id,
+                        name,
+                        status
+                    }
+                }
+            ''',
+            op_name='mustahiksQuery',
+            variables={'statuses': [Mustahik.Status.MISKIN]}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahiks']), 1)
+
+        for mustahik in content['data']['mustahiks']:
+            self.assertEqual(mustahik['status'], Mustahik.Status.MISKIN)
+
+    def test_query_mustahiks_if_statuses_is_provided_and_no_mustahiks_are_qualified_it_should_return_empty_list(self):
+        response = self.query(
+            '''
+                query mustahiksQuery($statuses: [String]) {
+                    mustahiks(statuses: $statuses) {
+                        id,
+                        name,
+                        status
+                    }
+                }
+            ''',
+            op_name='mustahiksQuery',
+            variables={'statuses': [Mustahik.Status.JANDA]}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahiks']), 0)
+
