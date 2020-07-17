@@ -1,8 +1,9 @@
 import graphene
 
 from graphene_django import DjangoObjectType
-from .apps.mustahik.mutations import MustahikMutation
-from .apps.mustahik.query import MustahikQuery
+
+from .mustahik.mutations import MustahikMutation
+from .mustahik.query import MustahikQuery
 
 ABOUT = 'Si Zakat merupakan sistem informasi untuk membantu masjid dalam \
 mengelola transaksi zakat. Sistem ini dibuat oleh tim lab 1231, \
