@@ -12,7 +12,7 @@ class Mustahik(models.Model):
 
     name = models.CharField(max_length=32)
     no_ktp = models.CharField(max_length=32, unique=True)
-    phone = models.CharField(max_length=32, blank=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
     address = models.TextField()
     province = models.CharField(max_length=32)
     regency = models.CharField(max_length=32)
@@ -25,4 +25,4 @@ class Mustahik(models.Model):
         default=Status.MISKIN,
     )
     family_size = models.PositiveSmallIntegerField()
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
