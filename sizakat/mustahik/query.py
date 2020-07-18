@@ -15,3 +15,4 @@ class MustahikQuery(graphene.ObjectType):
             return Mustahik.objects.filter(filter)
 
         return Mustahik.objects.all()
+
