@@ -279,6 +279,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             op_name='detailMustahikQuery',
             variables={'id':mustahik_id}
         )
+        self.assertResponseNoErrors(response)
+        
         content = json.loads(response.content)
         self.assertEqual(len(content['data']), 1)
         self.assertEqual(content['data']['mustahik']['name'], 'mustahik')

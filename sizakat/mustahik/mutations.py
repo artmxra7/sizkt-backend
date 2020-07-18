@@ -33,3 +33,14 @@ class MustahikMutation(DjangoModelFormMutation):
 
     class Meta:
         form_class = MustahikForm
+
+class DeleteMustahik(graphene.Mutation): 
+    class Arguments:
+        id = graphene.ID()
+    
+    mustahik = graphene.Field(MustahikType)
+
+    def mutate(self, info, id):
+        mustahik = Mustahik.objects.get(pk=id)
+        if mustahik is not None:
+            mustahik.delete()
