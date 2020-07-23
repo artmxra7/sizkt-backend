@@ -33,3 +33,13 @@ class AccountTestCase(TestCase):
             'text/json')
         message = json.loads(response.content).get('message', '')
         self.assertEqual(message, 'login failed')
+
+    def test_user_can_logout_via_post_logout(self):
+        c = Client()
+        log_in = c.post(
+            '/login/',
+            json.dumps({'username': 'testuser', 'password': '12345'}),
+            'text/json')
+        response = c.post('/logout/')
+        message = json.loads(response.content).get('message', '')
+        self.assertEqual(message, 'logout succeeded')
