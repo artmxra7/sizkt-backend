@@ -233,3 +233,62 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['mustahiks']), 0)
 
+    def test_mustahik_mutation_can_delete_mustahik(self):
+        count = Mustahik.objects.count()
+        response = self.query(
+            '''
+                mutation{
+                    deleteMustahik(id: 3) {
+                        mustahik {
+                            id
+                            name
+                        }
+                        message
+                        idMustahik
+                        nama
+                        noKtp
+                    }
+                }
+            ''',
+        )
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertIsNone(content['data']['deleteMustahik']['mustahik'])
+        self.assertEquals(content['data']['deleteMustahik']['message'], "Success")
+        self.assertEquals(Mustahik.objects.count(), count-1)
+
+    def test_mustahik_query_can_read_detail_mustahik(self):
+        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        mustahik_id = mustahik.pk
+        response = self.query(
+            '''
+                query detailMustahikQuery($id:ID){
+                    mustahik(id:$id){
+                        id
+                        name
+                        noKtp
+                        phone
+                        address
+                        province
+                        regency
+                        rt
+                        rw
+                        birthdate
+                        status
+                        familySize
+                        description
+                    }
+                }
+            ''',
+            op_name='detailMustahikQuery',
+            variables={'id':mustahik_id}
+        )
+        self.assertResponseNoErrors(response)
+        
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']), 1)
+        self.assertEqual(content['data']['mustahik']['name'], 'mustahik')
+        self.assertEqual(content['data']['mustahik']['noKtp'], '31751234567890')
+        self.assertEqual(content['data']['mustahik']['address'], 'Jalan raya depok')
+        
