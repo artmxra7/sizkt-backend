@@ -243,6 +243,10 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                             id
                             name
                         }
+                        message
+                        idMustahik
+                        nama
+                        noKtp
                     }
                 }
             ''',
@@ -250,7 +254,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertIsNone(content['data']['deleteMustahik'])
+        self.assertIsNone(content['data']['deleteMustahik']['mustahik'])
+        self.assertEquals(content['data']['deleteMustahik']['message'], "Success")
         self.assertEquals(Mustahik.objects.count(), count-1)
 
     def test_mustahik_query_can_read_detail_mustahik(self):
