@@ -1,7 +1,7 @@
 import json
 
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 
 def post_login(request):
@@ -16,3 +16,8 @@ def post_login(request):
             return JsonResponse({'message': 'login succeeded'})
 
     return JsonResponse({'message': 'login failed'})
+
+
+def post_logout(request):
+    logout(request)
+    return JsonResponse({'message': 'logout succeeded'})

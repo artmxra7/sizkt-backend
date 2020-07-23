@@ -19,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-from .account.views import post_login
+from .account.views import post_login, post_logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,4 +32,7 @@ urlpatterns = [
 
     # login path for post login
     path('login/', csrf_exempt(post_login)),
+
+    # logout path for post logout
+    path('logout/', csrf_exempt(post_logout)),
 ]
