@@ -235,10 +235,12 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
     def test_mustahik_mutation_can_delete_mustahik(self):
         count = Mustahik.objects.count()
+        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        mustahik_id = mustahik.pk
         response = self.query(
             '''
-                mutation{
-                    deleteMustahik(id: 3) {
+                mutation deleteMustahik($id: ID) {
+                    deleteMustahik(id: $id) {
                         mustahik {
                             id
                             name
@@ -250,13 +252,17 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                     }
                 }
             ''',
+            op_name='deleteMustahik',
+            variables={'id':mustahik_id}
         )
+        
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
         self.assertIsNone(content['data']['deleteMustahik']['mustahik'])
         self.assertEquals(content['data']['deleteMustahik']['message'], "Success")
         self.assertEquals(Mustahik.objects.count(), count-1)
+
 
     def test_mustahik_query_can_read_detail_mustahik(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
@@ -291,4 +297,94 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(content['data']['mustahik']['name'], 'mustahik')
         self.assertEqual(content['data']['mustahik']['noKtp'], '31751234567890')
         self.assertEqual(content['data']['mustahik']['address'], 'Jalan raya depok')
+
+    def test_mustahikWithName_should_return_list_of_mustahik(self):
+        response = self.query(
+            '''
+            query mustahikWithName($name:String){
+                mustahikWithName(name: $name){
+                    id,
+                    name
+                }
+                
+            }
+            ''',
+            op_name='mustahikWithName',
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahikWithName']),1)
+        self.assertEqual(content['data']['mustahikWithName'][0]['name'], 'mustahik')
+
+    def test_mustahikWithName_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
+        Mustahik.objects.create(
+            name='test',
+            no_ktp='11751234567890',
+            phone='081234567890',
+            address='Jalan raya depok',
+            province='Jawa Barat',
+            regency='Depok',
+            rt='003',
+            rw='002',
+            birthdate=date(1987, 6, 5),
+            status=Mustahik.Status.YATIM,
+            family_size=4,
+            description='desc'
+        )
+
+        Mustahik.objects.create(
+            name='eslu',
+            no_ktp='22751234337899',
+            phone='081234567890',
+            address='Jalan depok',
+            province='Jawa Timur',
+            regency='Bondo',
+            rt='003',
+            rw='002',
+            birthdate=date(1987, 6, 5),
+            status=Mustahik.Status.YATIM,
+            family_size=4,
+            description='desc'
+        )
+
+        response = self.query(
+            '''
+            query mustahikWithName($name:String){
+                mustahikWithName(name: $name){
+                    id,
+                    name
+                }
+                
+            }
+            ''',
+            op_name='mustahikWithName',
+            variables={'name':'es'}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahikWithName']), 2)
+        self.assertEqual(content['data']['mustahikWithName'][0]['name'], 'test')
+        self.assertEqual(content['data']['mustahikWithName'][1]['name'], 'eslu')
+
+    def test_mustahikWithName_if_name_is_not_available_should_return_empty_list(self):
+        response = self.query(
+            '''
+            query mustahikWithName($name:String){
+                mustahikWithName(name: $name){
+                    id,
+                    name
+                }
+                
+            }
+            ''',
+            op_name='mustahikWithName',
+            variables={'name':'#'}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahikWithName']), 0)
         
+
+
+
+

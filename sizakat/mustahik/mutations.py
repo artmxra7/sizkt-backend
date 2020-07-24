@@ -50,3 +50,5 @@ class DeleteMustahik(graphene.Mutation):
         _no_ktp = mustahik.no_ktp
         mustahik.delete()
         return DeleteMustahik(message = "Success", idMustahik=id, nama=_nama, noKtp=_no_ktp)
+
+
