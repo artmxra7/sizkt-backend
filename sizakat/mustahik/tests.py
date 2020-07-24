@@ -316,7 +316,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(len(content['data']['mustahikWithName']),1)
         self.assertEqual(content['data']['mustahikWithName'][0]['name'], 'mustahik')
 
-    def test_mustahikWithName_if_name_is_set_should_return_list_of_mustahiks_with_contain_the_name(self):
+    def test_mustahikWithName_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
         Mustahik.objects.create(
             name='test',
             no_ktp='11751234567890',

@@ -25,7 +25,9 @@ class MustahikQuery(graphene.ObjectType):
             return mustahik
 
     def resolve_mustahikWithName(self, info, name=""):
-        return
+        if name != "":
+            return Mustahik.objects.filter(name__icontains=name)
+        return Mustahik.objects.all()
         
         
  
