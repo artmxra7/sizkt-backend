@@ -162,15 +162,15 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
     def test_query_mustahik_should_return_list_of_mustahiks(self):
         response = self.query(
-        '''
+            '''
             query mustahiksQuery{
                 mustahiks {
                     id,
                     name
                 }
             }
-        ''',
-        op_name='mustahiksQuery'
+            ''',
+            op_name='mustahiksQuery'
         )
 
         self.assertResponseNoErrors(response)
@@ -241,35 +241,29 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             '''
                 mutation deleteMustahik($id: ID) {
                     deleteMustahik(id: $id) {
-                        mustahik {
-                            id
-                            name
-                        }
-                        message
+                        deleted
                         idMustahik
-                        nama
+                        name
                         noKtp
                     }
                 }
             ''',
             op_name='deleteMustahik',
-            variables={'id':mustahik_id}
+            variables={'id': mustahik_id}
         )
-        
+
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
-        self.assertIsNone(content['data']['deleteMustahik']['mustahik'])
-        self.assertEquals(content['data']['deleteMustahik']['message'], "Success")
+        self.assertTrue(content['data']['deleteMustahik']['deleted'])
         self.assertEquals(Mustahik.objects.count(), count-1)
-
 
     def test_mustahik_query_can_read_detail_mustahik(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
         mustahik_id = mustahik.pk
         response = self.query(
             '''
-                query detailMustahikQuery($id:ID){
+                query detailMustahikQuery($id:ID!){
                     mustahik(id:$id){
                         id
                         name
@@ -288,35 +282,19 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 }
             ''',
             op_name='detailMustahikQuery',
-            variables={'id':mustahik_id}
+            variables={'id': mustahik_id}
         )
         self.assertResponseNoErrors(response)
-        
+
         content = json.loads(response.content)
         self.assertEqual(len(content['data']), 1)
         self.assertEqual(content['data']['mustahik']['name'], 'mustahik')
-        self.assertEqual(content['data']['mustahik']['noKtp'], '31751234567890')
-        self.assertEqual(content['data']['mustahik']['address'], 'Jalan raya depok')
+        self.assertEqual(content['data']['mustahik']
+                         ['noKtp'], '31751234567890')
+        self.assertEqual(content['data']['mustahik']
+                         ['address'], 'Jalan raya depok')
 
-    def test_mustahikWithName_should_return_list_of_mustahik(self):
-        response = self.query(
-            '''
-            query mustahikWithName($name:String){
-                mustahikWithName(name: $name){
-                    id,
-                    name
-                }
-                
-            }
-            ''',
-            op_name='mustahikWithName',
-        )
-
-        content = json.loads(response.content)
-        self.assertEqual(len(content['data']['mustahikWithName']),1)
-        self.assertEqual(content['data']['mustahikWithName'][0]['name'], 'mustahik')
-
-    def test_mustahikWithName_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
+    def test_mustahiks_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
         Mustahik.objects.create(
             name='test',
             no_ktp='11751234567890',
@@ -349,42 +327,39 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
         response = self.query(
             '''
-            query mustahikWithName($name:String){
-                mustahikWithName(name: $name){
+            query mustahiks($nameContains:String){
+                mustahiks(nameContains: $nameContains){
                     id,
                     name
                 }
                 
             }
             ''',
-            op_name='mustahikWithName',
-            variables={'name':'es'}
+            op_name='mustahiks',
+            variables={'nameContains': 'es'}
         )
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['mustahikWithName']), 2)
-        self.assertEqual(content['data']['mustahikWithName'][0]['name'], 'test')
-        self.assertEqual(content['data']['mustahikWithName'][1]['name'], 'eslu')
+        self.assertEqual(len(content['data']['mustahiks']), 2)
+        self.assertEqual(
+            content['data']['mustahiks'][0]['name'], 'test')
+        self.assertEqual(
+            content['data']['mustahiks'][1]['name'], 'eslu')
 
-    def test_mustahikWithName_if_name_is_not_available_should_return_empty_list(self):
+    def test_mustahiks_if_name_is_not_available_should_return_empty_list(self):
         response = self.query(
             '''
-            query mustahikWithName($name:String){
-                mustahikWithName(name: $name){
+            query mustahiks($nameContains:String){
+                mustahiks(nameContains: $nameContains){
                     id,
                     name
                 }
                 
             }
             ''',
-            op_name='mustahikWithName',
-            variables={'name':'#'}
+            op_name='mustahiks',
+            variables={'nameContains': '#'}
         )
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['mustahikWithName']), 0)
-        
-
-
-
-
+        self.assertEqual(len(content['data']['mustahiks']), 0)

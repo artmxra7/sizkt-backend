@@ -5,6 +5,5 @@ from .models import Mustahik
 
 
 class MustahikType(DjangoObjectType):
-
     class Meta:
         model = Mustahik
