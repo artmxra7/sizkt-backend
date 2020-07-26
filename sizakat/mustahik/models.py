@@ -1,8 +1,6 @@
 from django.db import models
 
-from django.core.validators import RegexValidator
-
-numeric_only = RegexValidator(r'^[0-9]*$', 'Numeric only.')
+from sizakat.validators import validate_numeric_character
 
 
 class Mustahik(models.Model):
@@ -14,17 +12,21 @@ class Mustahik(models.Model):
     name = models.CharField(max_length=150)
     no_ktp = models.CharField(
         max_length=32, unique=True,
-        validators=[numeric_only]
+        validators=[validate_numeric_character]
     )
     phone = models.CharField(
         max_length=32, blank=True, null=True,
-        validators=[numeric_only]
+        validators=[validate_numeric_character]
     )
     address = models.TextField()
     province = models.CharField(max_length=32)
     regency = models.CharField(max_length=50)
-    rt = models.CharField(max_length=4, validators=[numeric_only])
-    rw = models.CharField(max_length=4, validators=[numeric_only])
+    rt = models.CharField(
+        max_length=4, validators=[validate_numeric_character]
+    )
+    rw = models.CharField(
+        max_length=4, validators=[validate_numeric_character]
+    )
     birthdate = models.DateField()
     status = models.CharField(
         max_length=32,

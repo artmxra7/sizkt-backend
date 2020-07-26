@@ -18,18 +18,18 @@ class MustahikQuery(graphene.ObjectType):
     def resolve_mustahiks(self, info, **kwargs):
         statuses = kwargs.get('statuses', None)
         name_contains = kwargs.get('name_contains', None)
-        mustahiks = Mustahik.objects.all()
+        filter_query = Q()
 
         if statuses and len(statuses) > 0:
-            mustahiks = mustahiks.filter(reduce(
+            filter_query |= reduce(
                 lambda a, b: a | b,
-                list(map(lambda s: Q(status=s), statuses))
-            ))
+                [Q(status=status) for status in statuses]
+            )
 
         if name_contains:
-            mustahiks = mustahiks.filter(name__icontains=name_contains)
+            filter_query &= Q(name__icontains=name_contains)
 
-        return mustahiks
+        return Mustahik.objects.filter(filter_query)
 
     def resolve_mustahik(self, info, id):
         return Mustahik.objects.get(pk=id)

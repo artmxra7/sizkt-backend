@@ -57,7 +57,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST').split()
+CORS_ORIGIN_WHITELIST = os.environ.get(
+    'CORS_ORIGIN_WHITELIST', 'http://localhost:3000').split()
 
 ROOT_URLCONF = 'sizakat.urls'
 
