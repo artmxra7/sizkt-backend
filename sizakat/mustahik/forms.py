@@ -19,4 +19,5 @@ class MustahikForm(forms.ModelForm):
             'status',
             'family_size',
             'description',
+            'gender',
         ]

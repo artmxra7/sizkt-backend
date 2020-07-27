@@ -9,6 +9,10 @@ class Mustahik(models.Model):
         MISKIN = ('MISKIN', 'Miskin')
         YATIM = ('YATIM', 'Yatim')
 
+    class Gender(models.TextChoices):
+        LAKILAKI = ('L', 'Laki-Laki')
+        PEREMPUAN = ('P', 'Perempuan')
+
     name = models.CharField(max_length=150)
     no_ktp = models.CharField(
         max_length=32, unique=True,
@@ -35,3 +39,4 @@ class Mustahik(models.Model):
     )
     family_size = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True, null=True)
+    gender = models.CharField(max_length=1, choices=Gender.choices)
