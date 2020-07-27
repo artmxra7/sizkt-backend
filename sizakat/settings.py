@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'sizakat.account',
 ]
 
+AUTH_USER_MODEL = 'account.User'
+
 GRAPHENE = {
     'SCHEMA': 'sizakat.schema.schema',
 }
