@@ -23,7 +23,8 @@ class MustahikModelTestCase(TestCase):
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.MISKIN,
             family_size=4,
-            description='desc'
+            description='desc',
+            gender=Mustahik.Gender.LAKILAKI
         )
 
     def test_mustahik_creation(self):
@@ -44,7 +45,8 @@ class MustahikModelTestCase(TestCase):
                 birthdate=date(1987, 4, 3),
                 status=Mustahik.Status.MISKIN,
                 family_size=1,
-                description='no_ktp is unique'
+                description='no_ktp is unique',
+                gender=Mustahik.Gender.PEREMPUAN
             )
 
 
@@ -64,7 +66,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.MISKIN,
             family_size=4,
-            description='desc'
+            description='desc',
+            gender=Mustahik.Gender.LAKILAKI
         )
 
     def test_mustahik_mutation_can_add_new_mustahik(self):
@@ -100,7 +103,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "birthdate": "1998-03-12",
                 "status": "YATIM",
                 "familySize": 3,
-                "description": "anak yatim"
+                "description": "anak yatim",
+                "gender": "L"
             }
         )
 
@@ -151,6 +155,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "status": "MISKIN",
                 "familySize": 4,
                 "description": new_desc,
+                "gender": "L",
                 "id": mustahik.pk
             }
         )
@@ -192,7 +197,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.YATIM,
             family_size=4,
-            description='desc'
+            description='desc',
+            gender=Mustahik.Gender.LAKILAKI
         )
 
         response = self.query(
@@ -278,6 +284,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                         status
                         familySize
                         description
+                        gender
                     }
                 }
             ''',
@@ -307,7 +314,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.YATIM,
             family_size=4,
-            description='desc'
+            description='desc',
+            gender=Mustahik.Gender.LAKILAKI
         )
 
         Mustahik.objects.create(
@@ -322,7 +330,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.YATIM,
             family_size=4,
-            description='desc'
+            description='desc',
+            gender=Mustahik.Gender.LAKILAKI
         )
 
         response = self.query(
