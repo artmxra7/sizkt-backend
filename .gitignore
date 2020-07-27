@@ -67,7 +67,7 @@ coverage.xml
 staticfiles/
 
 # migrations file
-*/migrations/
+/**/migrations/
 
 # Jupyter Notebook 
 .ipynb_checkpoints 

@@ -19,7 +19,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-from .account.views import change_reset_password, post_login, post_logout, reset_password
+from .account.views import change_reset_password, login_session, logout_session, reset_password, verify_session
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -30,10 +30,9 @@ urlpatterns = [
 
     path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
 
-    path('login/', csrf_exempt(post_login)),
-
-    # logout path for post logout
-    path('logout/', csrf_exempt(post_logout)),
+    path('login/', csrf_exempt(login_session)),
+    path('logout/', csrf_exempt(logout_session)),
     path('reset-password/', csrf_exempt(reset_password)),
     path('change-reset-password/', csrf_exempt(change_reset_password)),
+    path('verify-session/', verify_session),
 ]
