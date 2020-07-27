@@ -1,0 +1,11 @@
+plugins:
+  pep8:
+    enabled: true
+  pylint:
+    enabled: true
+    plugins:
+      - django
+  radon: 
+    enabled: true
+  sonar-python:
+    enabled: true
