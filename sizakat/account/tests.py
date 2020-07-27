@@ -4,8 +4,6 @@ from django.test import Client, TestCase
 from django.contrib.auth import get_user_model
 from django.core import mail
 
-from .views import post_login
-
 User = get_user_model()
 
 
@@ -21,10 +19,10 @@ class AccountTestCase(TestCase):
             '/login/',
             json.dumps({'username': 'testuser', 'password': '12345'}),
             'text/json')
-        message = json.loads(response.content).get('message', '')
+        logged_in = json.loads(response.content).get('loggedIn', None)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(message, 'login succeeded')
+        self.assertTrue(logged_in)
 
     def test_user_get_fail_message_when_login_failed(self):
         c = Client()
@@ -32,8 +30,8 @@ class AccountTestCase(TestCase):
             '/login/',
             json.dumps({'username': 'thisuser', 'password': 'willfailed'}),
             'text/json')
-        message = json.loads(response.content).get('message', '')
-        self.assertEqual(message, 'login failed')
+        logged_in = json.loads(response.content).get('loggedIn', None)
+        self.assertFalse(logged_in)
 
     def test_user_can_logout_via_post_logout(self):
         c = Client()
@@ -42,8 +40,8 @@ class AccountTestCase(TestCase):
             json.dumps({'username': 'testuser', 'password': '12345'}),
             'text/json')
         response = c.post('/logout/')
-        message = json.loads(response.content).get('message', '')
-        self.assertEqual(message, 'logout succeeded')
+        logged_out = json.loads(response.content).get('loggedOut', None)
+        self.assertTrue(logged_out)
 
     def test_user_can_reset_password_and_change_with_valid_token(self):
         c = Client()
@@ -54,8 +52,8 @@ class AccountTestCase(TestCase):
                 'changePasswordUrl': 'localhost/reset-password'}),
             'text/json'
         )
-        message = json.loads(response.content).get('message', '')
-        self.assertEqual(message, 'reset token has been sent to your email')
+        success = json.loads(response.content).get('success', None)
+        self.assertTrue(success)
 
         # Test that one message has been sent.
         self.assertEqual(len(mail.outbox), 1)
@@ -74,13 +72,29 @@ class AccountTestCase(TestCase):
                         'newPassword': new_pass}),
             'text/json'
         )
-        self.assertEqual(
-            json.loads(change_reset_password.content).get('message'),
-            'password successfully changed')
+        self.assertTrue(json.loads(
+            change_reset_password.content).get('success'))
 
         login_response = c.post(
             '/login/',
             json.dumps({'username': 'testuser', 'password': new_pass}),
             'text/json')
-        self.assertEqual(json.loads(login_response.content).get(
-            'message'), 'login succeeded')
+        self.assertTrue(json.loads(login_response.content).get('loggedIn'))
+
+    def test_session_is_valid_after_logged_in(self):
+        c = Client()
+        response = c.post(
+            '/login/',
+            json.dumps({'username': 'testuser', 'password': '12345'}),
+            'text/json')
+        logged_in = json.loads(response.content).get('loggedIn', None)
+
+        self.assertTrue(logged_in)
+
+        session = json.loads(response.content).get('session', None)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': session,
+        }
+        verify_response = c.get('/verify-session/', **auth_headers)
+        self.assertTrue(json.loads(
+            verify_response.content).get('active', None))
