@@ -3,6 +3,7 @@ import json
 from datetime import date
 from django.db.utils import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 from graphene_django.utils.testing import GraphQLTestCase
 from sizakat.schema import schema
 
@@ -48,6 +49,13 @@ class MustahikModelTestCase(TestCase):
                 description='no_ktp is unique',
                 gender=Mustahik.Gender.PEREMPUAN
             )
+
+    def test_calculate_mustahik_age(self):
+        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        self.assertEqual(
+            mustahik.calculate_age(),
+            timezone.now().year - mustahik.birthdate.year
+        )
 
 
 class MustahikGraphQLTestCase(GraphQLTestCase):
