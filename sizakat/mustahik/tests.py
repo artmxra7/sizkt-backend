@@ -293,6 +293,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                         familySize
                         description
                         gender
+                        age
                     }
                 }
             ''',
@@ -302,12 +303,12 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertResponseNoErrors(response)
 
         content = json.loads(response.content)
+        data_mustahik = content['data']['mustahik']
         self.assertEqual(len(content['data']), 1)
-        self.assertEqual(content['data']['mustahik']['name'], 'mustahik')
-        self.assertEqual(content['data']['mustahik']
-                         ['noKtp'], '31751234567890')
-        self.assertEqual(content['data']['mustahik']
-                         ['address'], 'Jalan raya depok')
+        self.assertEqual(data_mustahik['name'], 'mustahik')
+        self.assertEqual(data_mustahik['noKtp'], '31751234567890')
+        self.assertEqual(data_mustahik['address'], 'Jalan raya depok')
+        self.assertEqual(data_mustahik['age'], mustahik.calculate_age())
 
     def test_mustahiks_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
         Mustahik.objects.create(

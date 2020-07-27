@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 from sizakat.validators import validate_numeric_character
 
@@ -40,3 +41,6 @@ class Mustahik(models.Model):
     family_size = models.PositiveSmallIntegerField()
     description = models.TextField(blank=True, null=True)
     gender = models.CharField(max_length=1, choices=Gender.choices)
+
+    def calculate_age(self):
+        return timezone.now().year - self.birthdate.year
