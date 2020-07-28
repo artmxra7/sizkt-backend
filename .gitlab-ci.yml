@@ -1,0 +1,81 @@
+include:
+  - template: Code-Quality.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
+  - template: Secret-Detection.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
+  - template: License-Scanning.gitlab-ci.yml
+
+stages:
+  - test
+  - deploy
+
+code_quality:
+  tags:
+    - docker
+  artifacts:
+    paths: [gl-code-quality-report.json]
+
+sast:
+  tags:
+    - docker
+  artifacts:
+    paths: [gl-sast-report.json]
+
+django-test:
+  image: python:3.8.3
+  stage: test
+  variables:
+      SECRET_KEY: "2c4=+s-cv(@z%vs_zkw*(+juf=)0&j1(0yn^ekap)s+z2jsqt3"
+      ALLOWED_HOSTS: "*"
+      DEBUG: 1
+  before_script:
+    - pip install -r requirements.txt
+    - python manage.py migrate
+  script:
+    - coverage run --include='sizakat/*' manage.py test
+    - coverage report -m
+  when: on_success
+
+deploy-development:
+  image:
+    name: alpine/git:latest
+    entrypoint: [""]
+  stage: deploy
+  environment: development
+  variables:
+    GIT_URL: git@$REMOTE_SERVER:sizakat-5.0-backend.git
+  before_script:
+    - mkdir ~/.ssh
+    - cat "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - mv "$KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - git config remote.development.url >&- || git remote add development $GIT_URL
+    - git checkout $CI_COMMIT_TAG
+    - git push --force development $CI_COMMIT_TAG 2>&1 | tee git-push.log
+    - "$(grep -E 'remote: Return with exit [0-9]+' git-push.log | grep -oE 'exit [0-9]+')"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^development-\d+$/'
+
+deploy-testing:
+  image:
+    name: alpine/git:latest
+    entrypoint: [""]
+  stage: deploy
+  environment: testing
+  variables:
+    GIT_URL: git@$REMOTE_SERVER:sizakat-5.0-backend.git
+  before_script:
+    - mkdir ~/.ssh
+    - cat "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - mv "$KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - git config remote.testing.url >&- || git remote add testing $GIT_URL
+    - git checkout $CI_COMMIT_BRANCH
+    - git push testing $CI_COMMIT_BRANCH 2>&1 | tee git-push.log
+    - "$(grep -E 'remote: Return with exit [0-9]+' git-push.log | grep -oE 'exit [0-9]+')"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "testing"'
