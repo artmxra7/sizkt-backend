@@ -7,48 +7,85 @@ from django.utils import timezone
 from graphene_django.utils.testing import GraphQLTestCase
 from sizakat.schema import schema
 
-from .models import Mustahik
+from .models import DataSource, DataSourceInstitusi, DataSourcePekerja, DataSourceWarga, Mustahik
 
 
 class MustahikModelTestCase(TestCase):
     def setUp(self):
-        Mustahik.objects.create(
+        data_source_institusi = DataSource.objects.create(
+            pic_name='pic test',
+            pic_ktp='1234567890',
+            pic_phone='0812389120',
+            pic_position='test',
+            category=DataSource.Category.INSTITUSI
+        )
+        institusi_detail = DataSourceInstitusi.objects.create(
+            name='lembaga test',
+            address='jl test',
+            data_source=data_source_institusi,
+            province='jakarta',
+            regency='jakarta timur',
+            sub_district='makasar',
+            village='pinangranti',
+            rt='001',
+            rw='001'
+        )
+        data_source_pekerja = DataSource.objects.create(
+            pic_name='pic test',
+            pic_ktp='1234567891',
+            pic_phone='0812389121',
+            pic_position='test',
+            category=DataSource.Category.PEKERJA
+        )
+        pekerja_detail = DataSourcePekerja.objects.create(
+            data_source=data_source_pekerja,
+            profession='tester',
+            location='jl tester'
+        )
+        data_source_warga = DataSource.objects.create(
+            pic_name='pic test',
+            pic_ktp='1234567892',
+            pic_phone='0812389122',
+            pic_position='test',
+            category=DataSource.Category.WARGA
+        )
+        institusi_detail = DataSourceWarga.objects.create(
+            data_source=data_source_warga,
+            province='jakarta',
+            regency='jakarta timur',
+            sub_district='makasar',
+            village='pinangranti',
+            rt='001',
+            rw='001'
+        )
+        mustahik = Mustahik.objects.create(
             name='mustahik',
             no_ktp='31751234567890',
             phone='081234567890',
             address='Jalan raya depok',
-            province='Jawa Barat',
-            regency='Depok',
-            rt='003',
-            rw='002',
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.MISKIN,
-            family_size=4,
-            description='desc',
-            gender=Mustahik.Gender.LAKILAKI
+            gender=Mustahik.Gender.LAKILAKI,
+            data_source=data_source_warga
         )
 
-    def test_mustahik_creation(self):
+    def test_mustahik_creation_from_datasource_institusi(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
         self.assertTrue(isinstance(mustahik, Mustahik))
 
-    def test_no_ktp_mustahik_is_unique(self):
-        with self.assertRaises(IntegrityError):
-            Mustahik.objects.create(
-                name='kihatsum',
-                no_ktp='31751234567890',
-                phone='08987654321',
-                address='Jalan raya bogor',
-                province='Jawa Barat',
-                regency='Bogor',
-                rt='002',
-                rw='003',
-                birthdate=date(1987, 4, 3),
-                status=Mustahik.Status.MISKIN,
-                family_size=1,
-                description='no_ktp is unique',
-                gender=Mustahik.Gender.PEREMPUAN
-            )
+    def test_mustahik_change_datasource_to_datasource_pekerja(self):
+        data_source_pekerja = DataSource.objects.get(pic_ktp='1234567891')
+        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        mustahik.data_source = data_source_pekerja
+        mustahik.save()
+        self.assertEqual(mustahik.data_source.category, DataSource.Category.PEKERJA)
+
+    def test_mustahik_change_datasource_to_datasource_warga(self):
+        data_source_warga = DataSource.objects.get(pic_ktp='1234567892')
+        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        mustahik.data_source = data_source_warga
+        mustahik.save()
+        self.assertEqual(mustahik.data_source.category, DataSource.Category.WARGA)
 
     def test_calculate_mustahik_age(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
@@ -62,38 +99,44 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
     GRAPHQL_SCHEMA = schema
 
     def setUp(self):
-        Mustahik.objects.create(
+        data_source_warga = DataSource.objects.create(
+            pic_name='pic test',
+            pic_ktp='1234567892',
+            pic_phone='0812389122',
+            pic_position='test',
+            category=DataSource.Category.WARGA
+        )
+        institusi_detail = DataSourceWarga.objects.create(
+            data_source=data_source_warga,
+            province='jakarta',
+            regency='jakarta timur',
+            sub_district='makasar',
+            village='pinangranti',
+            rt='001',
+            rw='001'
+        )
+        mustahik = Mustahik.objects.create(
             name='mustahik',
             no_ktp='31751234567890',
             phone='081234567890',
             address='Jalan raya depok',
-            province='Jawa Barat',
-            regency='Depok',
-            rt='003',
-            rw='002',
             birthdate=date(1987, 6, 5),
             status=Mustahik.Status.MISKIN,
-            family_size=4,
-            description='desc',
-            gender=Mustahik.Gender.LAKILAKI
+            gender=Mustahik.Gender.LAKILAKI,
+            data_source=data_source_warga
         )
 
     def test_mustahik_mutation_can_add_new_mustahik(self):
         no_ktp = '123891210121'
+        data_source = DataSource.objects.get(pic_ktp='1234567892')
         response = self.query(
             '''
             mutation mustahikMutation($input: MustahikMutationInput!) {
                 mustahikMutation(input: $input) {
                     mustahik {
-                        id
                         name
                         noKtp
                         status
-                        description
-                    }
-                    errors {
-                        field
-                        messages
                     }
                 }
             }
@@ -104,15 +147,10 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "noKtp": no_ktp,
                 "phone": "02132132180",
                 "address": "jalan swadaya",
-                "province": "jakarta",
-                "regency": "manggarai",
-                "rt": "001",
-                "rw": "001",
                 "birthdate": "1998-03-12",
-                "status": "YATIM",
-                "familySize": 3,
-                "description": "anak yatim",
-                "gender": "L"
+                "status": "MISKIN",
+                "gender": "L",
+                "dataSource": data_source.pk
             }
         )
 
@@ -122,25 +160,26 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         # Validate content
         content = json.loads(response.content)
         self.assertEqual(content['data']['mustahikMutation']
-                         ['mustahik']['status'], 'YATIM')
+                         ['mustahik']['status'], 'MISKIN')
 
         # Validate success save to db
-        self.assertNotEqual(Mustahik.objects.count(), 0)
+        self.assertEqual(Mustahik.objects.count(), 2)
         mustahik = Mustahik.objects.get(no_ktp=no_ktp)
         self.assertEqual(mustahik.name, 'jumat')
 
     def test_mustahik_mutation_can_update_mustahik(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        data_source = mustahik.data_source
         mustahik_id = mustahik.pk
-        old_desc = mustahik.description
-        new_desc = 'keluarga tidak mampu'
+        old_status = mustahik.status
+        new_status = 'MUSAFIR'
         response = self.query(
             '''
             mutation mustahikMutation($input: MustahikMutationInput!) {
                 mustahikMutation(input: $input) {
                     mustahik {
                         id
-                        description
+                        status
                     }
                     errors {
                         field
@@ -155,23 +194,17 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "noKtp": "31751234567890",
                 "phone": "081234567890",
                 "address": "Jalan raya depok",
-                "province": "Jawa Barat",
-                "regency": "Depok",
-                "rt": "003",
-                "rw": "002",
                 "birthdate": "1987-06-05",
-                "status": "MISKIN",
-                "familySize": 4,
-                "description": new_desc,
+                "status": "MUSAFIR",
                 "gender": "L",
-                "id": mustahik.pk
+                "id": mustahik.pk,
+                "dataSource": data_source.pk
             }
         )
 
         # Validate success update desc mustahik
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
-        self.assertNotEqual(mustahik.description, old_desc)
-        self.assertEqual(mustahik.description, new_desc)
+        self.assertEqual(mustahik.status, new_status)
 
     def test_query_mustahik_should_return_list_of_mustahiks(self):
         response = self.query(
@@ -193,22 +226,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(content['data']['mustahiks'][0]['name'], 'mustahik')
 
     def test_query_mustahiks_if_statuses_is_set_should_return_list_of_mustahiks_with_coresponding_status(self):
-        Mustahik.objects.create(
-            name='test',
-            no_ktp='11751234567890',
-            phone='081234567890',
-            address='Jalan raya depok',
-            province='Jawa Barat',
-            regency='Depok',
-            rt='003',
-            rw='002',
-            birthdate=date(1987, 6, 5),
-            status=Mustahik.Status.YATIM,
-            family_size=4,
-            description='desc',
-            gender=Mustahik.Gender.LAKILAKI
-        )
-
         response = self.query(
             '''
                 query mustahiksQuery($statuses: [String]) {
@@ -241,7 +258,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 }
             ''',
             op_name='mustahiksQuery',
-            variables={'statuses': [Mustahik.Status.JANDA]}
+            variables={'statuses': [Mustahik.Status.GHARIM]}
         )
 
         content = json.loads(response.content)
@@ -279,20 +296,9 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             '''
                 query detailMustahikQuery($id:ID!){
                     mustahik(id:$id){
-                        id
                         name
                         noKtp
-                        phone
                         address
-                        province
-                        regency
-                        rt
-                        rw
-                        birthdate
-                        status
-                        familySize
-                        description
-                        gender
                         age
                     }
                 }
@@ -311,38 +317,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(data_mustahik['age'], mustahik.calculate_age())
 
     def test_mustahiks_if_name_is_set_should_return_list_of_mustahiks_that_contain_the_name(self):
-        Mustahik.objects.create(
-            name='test',
-            no_ktp='11751234567890',
-            phone='081234567890',
-            address='Jalan raya depok',
-            province='Jawa Barat',
-            regency='Depok',
-            rt='003',
-            rw='002',
-            birthdate=date(1987, 6, 5),
-            status=Mustahik.Status.YATIM,
-            family_size=4,
-            description='desc',
-            gender=Mustahik.Gender.LAKILAKI
-        )
-
-        Mustahik.objects.create(
-            name='eslu',
-            no_ktp='22751234337899',
-            phone='081234567890',
-            address='Jalan depok',
-            province='Jawa Timur',
-            regency='Bondo',
-            rt='003',
-            rw='002',
-            birthdate=date(1987, 6, 5),
-            status=Mustahik.Status.YATIM,
-            family_size=4,
-            description='desc',
-            gender=Mustahik.Gender.LAKILAKI
-        )
-
         response = self.query(
             '''
             query mustahiks($nameContains:String){
@@ -350,19 +324,17 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                     id,
                     name
                 }
-                
+
             }
             ''',
             op_name='mustahiks',
-            variables={'nameContains': 'es'}
+            variables={'nameContains': 'hik'}
         )
 
         content = json.loads(response.content)
-        self.assertEqual(len(content['data']['mustahiks']), 2)
+        self.assertEqual(len(content['data']['mustahiks']), 1)
         self.assertEqual(
-            content['data']['mustahiks'][0]['name'], 'test')
-        self.assertEqual(
-            content['data']['mustahiks'][1]['name'], 'eslu')
+            content['data']['mustahiks'][0]['name'], 'mustahik')
 
     def test_mustahiks_if_name_is_not_available_should_return_empty_list(self):
         response = self.query(
@@ -372,7 +344,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                     id,
                     name
                 }
-                
+
             }
             ''',
             op_name='mustahiks',
