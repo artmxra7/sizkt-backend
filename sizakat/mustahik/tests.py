@@ -106,7 +106,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             pic_position='test',
             category=DataSource.Category.WARGA
         )
-        institusi_detail = DataSourceWarga.objects.create(
+        data_source_detail = DataSourceWarga.objects.create(
             data_source=data_source_warga,
             province='jakarta',
             regency='jakarta timur',
@@ -353,3 +353,73 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['mustahiks']), 0)
+
+    def test_data_sources_query_should_return_list_data_sources(self):
+        response = self.query(
+            '''
+            query dataSourcesQuery{
+                dataSources {
+                    id
+                    category
+                    dataSourceDetail {
+                        __typename
+                        ... on DataSourceWargaType {
+                            rt
+                        }
+                        ... on DataSourcePekerjaType {
+                            profession
+                        }
+                        ... on DataSourceInstitusiType {
+                            name
+                        }
+                    }
+                }
+            }
+            ''',
+            op_name='dataSourcesQuery'
+        )
+
+        self.assertResponseNoErrors(response)
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['dataSources']), 1)
+        self.assertEqual(content['data']['dataSources'][0]['category'], 'WARGA')
+
+        first_data_source = content['data']['dataSources'][0]['dataSourceDetail']
+        self.assertEqual(first_data_source['__typename'], 'DataSourceWargaType')
+        self.assertTrue('rt' in first_data_source.keys())
+
+    def test_data_sources_query_with_category_selection(self):
+        response = self.query(
+            '''
+            query dataSourcesQuery($category: String) {
+                dataSources(category: $category) {
+                    id
+                    category
+                }
+            }
+            ''',
+            op_name='dataSourcesQuery',
+            variables={'category': DataSource.Category.WARGA}
+        )
+
+        content = json.loads(response.content)
+        categories = [source['category'] for source in content['data']['dataSources']]
+        self.assertTrue(all([category == DataSource.Category.WARGA for category in categories]))
+
+    def test_data_source_query_detail_with_given_id(self):
+        response = self.query(
+            '''
+            query dataSourceQuery($id: ID!) {
+                dataSource(id: $id) {
+                    id
+                    picName
+                }
+            }
+            ''',
+            op_name='dataSourceQuery',
+            variables={'id': 1}
+        )
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['dataSource']['id'], '1')
+        self.assertEqual(content['data']['dataSource']['picName'], 'pic test')
