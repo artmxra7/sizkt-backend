@@ -12,29 +12,13 @@ from .models import DataSource, DataSourceInstitusi, DataSourcePekerja, DataSour
 
 class MustahikModelTestCase(TestCase):
     def setUp(self):
-        data_source_institusi = DataSource.objects.create(
-            pic_name='pic test',
-            pic_ktp='1234567890',
-            pic_phone='0812389120',
-            pic_position='test',
-            category=DataSource.Category.INSTITUSI
-        )
-        institusi_detail = DataSourceInstitusi.objects.create(
-            name='lembaga test',
-            address='jl test',
-            data_source=data_source_institusi,
-            province='jakarta',
-            regency='jakarta timur',
-            sub_district='makasar',
-            village='pinangranti',
-            rt='001',
-            rw='001'
-        )
+        data_source_detail = {
+            'pic_name': 'pic test',
+            'pic_ktp': '1234567890',
+            'pic_phone': '0812389120',
+            'pic_position': 'test',
+        }
         data_source_pekerja = DataSource.objects.create(
-            pic_name='pic test',
-            pic_ktp='1234567891',
-            pic_phone='0812389121',
-            pic_position='test',
             category=DataSource.Category.PEKERJA
         )
         pekerja_detail = DataSourcePekerja.objects.create(
@@ -42,53 +26,26 @@ class MustahikModelTestCase(TestCase):
             profession='tester',
             location='jl tester'
         )
-        data_source_warga = DataSource.objects.create(
-            pic_name='pic test',
-            pic_ktp='1234567892',
-            pic_phone='0812389122',
-            pic_position='test',
-            category=DataSource.Category.WARGA
-        )
-        institusi_detail = DataSourceWarga.objects.create(
-            data_source=data_source_warga,
-            province='jakarta',
-            regency='jakarta timur',
-            sub_district='makasar',
-            village='pinangranti',
-            rt='001',
-            rw='001'
-        )
+        mustahik_base = {
+            'phone': '081234567890',
+            'address': 'Jalan raya depok',
+            'birthdate': date(1987, 6, 5),
+            'status': Mustahik.Status.MISKIN,
+            'gender': Mustahik.Gender.LAKILAKI,
+        }
         mustahik = Mustahik.objects.create(
-            name='mustahik',
-            no_ktp='31751234567890',
-            phone='081234567890',
-            address='Jalan raya depok',
-            birthdate=date(1987, 6, 5),
-            status=Mustahik.Status.MISKIN,
-            gender=Mustahik.Gender.LAKILAKI,
-            data_source=data_source_warga
+            name='mustahik1',
+            no_ktp='31751234567891',
+            data_source=data_source_pekerja,
+            **mustahik_base
         )
 
-    def test_mustahik_creation_from_datasource_institusi(self):
-        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+    def test_mustahik_creation(self):
+        mustahik = Mustahik.objects.get(no_ktp='31751234567891')
         self.assertTrue(isinstance(mustahik, Mustahik))
 
-    def test_mustahik_change_datasource_to_datasource_pekerja(self):
-        data_source_pekerja = DataSource.objects.get(pic_ktp='1234567891')
-        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
-        mustahik.data_source = data_source_pekerja
-        mustahik.save()
-        self.assertEqual(mustahik.data_source.category, DataSource.Category.PEKERJA)
-
-    def test_mustahik_change_datasource_to_datasource_warga(self):
-        data_source_warga = DataSource.objects.get(pic_ktp='1234567892')
-        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
-        mustahik.data_source = data_source_warga
-        mustahik.save()
-        self.assertEqual(mustahik.data_source.category, DataSource.Category.WARGA)
-
     def test_calculate_mustahik_age(self):
-        mustahik = Mustahik.objects.get(no_ktp='31751234567890')
+        mustahik = Mustahik.objects.get(no_ktp='31751234567891')
         self.assertEqual(
             mustahik.calculate_age(),
             timezone.now().year - mustahik.birthdate.year
@@ -100,14 +57,14 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
     def setUp(self):
         data_source_warga = DataSource.objects.create(
-            pic_name='pic test',
-            pic_ktp='1234567892',
-            pic_phone='0812389122',
-            pic_position='test',
             category=DataSource.Category.WARGA
         )
         data_source_detail = DataSourceWarga.objects.create(
             data_source=data_source_warga,
+            pic_name='pic test',
+            pic_ktp='1234567892',
+            pic_phone='0812389122',
+            pic_position='test',
             province='jakarta',
             regency='jakarta timur',
             sub_district='makasar',
@@ -126,9 +83,14 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             data_source=data_source_warga
         )
 
+    def test_about_query(self):
+        response = self.query('{ about }')
+        self.assertResponseNoErrors(response)
+
     def test_mustahik_mutation_can_add_new_mustahik(self):
         no_ktp = '123891210121'
-        data_source = DataSource.objects.get(pic_ktp='1234567892')
+        data_source_warga = DataSourceWarga.objects.get(pic_ktp='1234567892')
+        data_source = data_source_warga.data_source
         response = self.query(
             '''
             mutation mustahikMutation($input: MustahikMutationInput!) {
@@ -169,7 +131,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
 
     def test_mustahik_mutation_can_update_mustahik(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567890')
-        data_source = mustahik.data_source
+        data_source_warga = DataSourceWarga.objects.get(pic_ktp='1234567892')
+        data_source = data_source_warga.data_source
         mustahik_id = mustahik.pk
         old_status = mustahik.status
         new_status = 'MUSAFIR'
@@ -408,18 +371,60 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertTrue(all([category == DataSource.Category.WARGA for category in categories]))
 
     def test_data_source_query_detail_with_given_id(self):
+        data_source_detail = {
+            'pic_name': 'pic test',
+            'pic_ktp': '1234567890',
+            'pic_phone': '0812389120',
+            'pic_position': 'test',
+        }
+        data_source_pekerja = DataSource.objects.create(
+            category=DataSource.Category.PEKERJA
+        )
+        pekerja_detail = DataSourcePekerja.objects.create(
+            data_source=data_source_pekerja,
+            profession='tester',
+            location='jl tester',
+            **data_source_detail
+        )
+        data_source_institusi = DataSource.objects.create(
+            category=DataSource.Category.INSTITUSI
+        )
+        pekerja_detail = DataSourceInstitusi.objects.create(
+            data_source=data_source_institusi,
+            name='test',
+            province='test',
+            regency='test',
+            sub_district='test',
+            village='test',
+            rw='01',
+            rt='01',
+            address='test',
+            **data_source_detail
+        )
         response = self.query(
             '''
-            query dataSourceQuery($id: ID!) {
-                dataSource(id: $id) {
+            query dataSourceQuery($id1: ID!, $id2: ID!, $id3: ID!) {
+                q1: dataSource(id: $id1) {
                     id
-                    picName
+                    detail: dataSourceDetail { __typename }
+                }
+                q2: dataSource(id: $id2) {
+                    id
+                    detail: dataSourceDetail { __typename }
+                }
+                q3: dataSource(id: $id3) {
+                    id
+                    detail: dataSourceDetail { __typename }
                 }
             }
             ''',
             op_name='dataSourceQuery',
-            variables={'id': 1}
+            variables={'id1': 2, 'id2': 3, 'id3': 4}
         )
         content = json.loads(response.content)
-        self.assertEqual(content['data']['dataSource']['id'], '1')
-        self.assertEqual(content['data']['dataSource']['picName'], 'pic test')
+        self.assertEqual(content['data']['q1']['id'], '2')
+        self.assertEqual(content['data']['q1']['detail']['__typename'], 'DataSourceWargaType')
+        self.assertEqual(content['data']['q2']['id'], '3')
+        self.assertEqual(content['data']['q2']['detail']['__typename'], 'DataSourcePekerjaType')
+        self.assertEqual(content['data']['q3']['id'], '4')
+        self.assertEqual(content['data']['q3']['detail']['__typename'], 'DataSourceInstitusiType')

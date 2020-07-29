@@ -49,6 +49,13 @@ class DataSource(models.Model):
         INSTITUSI = ('INSTITUSI', 'Institusi')
         PEKERJA = ('PEKERJA', 'Pekerja')
 
+    category = models.CharField(max_length=32, choices=Category.choices)
+
+
+class DataSourceDetail(models.Model):
+    class Meta:
+        abstract = True
+
     pic_name = models.CharField(max_length=150)
     pic_ktp = models.CharField(
         max_length=32,
@@ -59,13 +66,9 @@ class DataSource(models.Model):
         validators=[validate_numeric_character]
     )
     pic_position = models.CharField(max_length=50)
-    category = models.CharField(max_length=32, choices=Category.choices)
-
-    class Meta:
-        unique_together = ('pic_ktp', 'category',)
 
 
-class DataSourceWarga(models.Model):
+class DataSourceWarga(DataSourceDetail):
     province = models.CharField(max_length=50)
     regency = models.CharField(max_length=50)
     sub_district = models.CharField(max_length=50)
@@ -82,7 +85,7 @@ class DataSourceWarga(models.Model):
     )
 
 
-class DataSourceInstitusi(models.Model):
+class DataSourceInstitusi(DataSourceDetail):
     name = models.CharField(max_length=150)
     province = models.CharField(max_length=50)
     regency = models.CharField(max_length=50)
@@ -101,7 +104,7 @@ class DataSourceInstitusi(models.Model):
     )
 
 
-class DataSourcePekerja(models.Model):
+class DataSourcePekerja(DataSourceDetail):
     profession = models.CharField(max_length=50)
     location = models.CharField(max_length=50)
     data_source = models.OneToOneField(
