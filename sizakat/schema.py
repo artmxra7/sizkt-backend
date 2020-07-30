@@ -20,6 +20,10 @@ class Query(MustahikQuery, graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     mustahik_mutation = MustahikMutation.Field()
     delete_mustahik = DeleteMustahik.Field()
-    
+    dataSource_mutation = DataSourceMutation.Field()
+    dataSourceWarga_mutation = DataSourceWargaMutation.Field()
+    dataSourceInstitusi_mutation = DataSourceInstitusiMutation.Field()
+    dataSourcePekerja_mutation = DataSourcePekerjaMutation.Field()
+
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
