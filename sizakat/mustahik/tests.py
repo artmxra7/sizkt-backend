@@ -40,6 +40,43 @@ class MustahikModelTestCase(TestCase):
             **mustahik_base
         )
 
+        data_source_institusi = DataSource.objects.create(
+            category=DataSource.Category.INSTITUSI
+        )
+
+        institusi_detail = DataSourceInstitusi.objects.create(
+            pic_ktp = '12345678901234',
+            pic_name = 'instisusi',
+            pic_phone = '123456789012',
+            pic_position = 'Head',
+            name = 'Institusi Bandung',
+            province = 'Jawa Barat',
+            sub_district = 'Bogor',
+            village = 'Desa',
+            rt = '001',
+            rw = '001',
+            address = 'Jalan suatu desa no 1',
+            data_source = data_source_institusi,
+        )
+
+        data_source_warga = DataSource.objects.create(
+            category=DataSource.Category.WARGA
+        )
+
+        warga_detail = DataSourceWarga.objects.create(
+            pic_ktp = '12345678901111',
+            pic_name = 'wargai',
+            pic_phone = '123456789012',
+            pic_position = 'Ketua RT',
+            province = 'Test Barat',
+            regency = 'Kabupaten test',
+            sub_district = 'Testmatan',
+            village = 'Desa tes',
+            rt = '001',
+            rw = '002',
+            data_source = data_source_warga
+        )
+
     def test_mustahik_creation(self):
         mustahik = Mustahik.objects.get(no_ktp='31751234567891')
         self.assertTrue(isinstance(mustahik, Mustahik))
@@ -50,6 +87,14 @@ class MustahikModelTestCase(TestCase):
             mustahik.calculate_age(),
             timezone.now().year - mustahik.birthdate.year
         )
+
+    def test_data_source_warga_creation(self):
+        data_source_warga = DataSourceWarga.objects.get(pic_ktp='12345678901111')
+        self.assertTrue(isinstance(data_source_warga, DataSourceWarga))
+    
+    def test_data_source_institusi_creation(self):
+        data_source_institusi = DataSourceInstitusi.objects.get(pic_ktp='12345678901234')
+        self.assertTrue(isinstance(data_source_institusi, DataSourceInstitusi))
 
 
 class MustahikGraphQLTestCase(GraphQLTestCase):
@@ -82,6 +127,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             gender=Mustahik.Gender.LAKILAKI,
             data_source=data_source_warga
         )
+
 
     def test_about_query(self):
         response = self.query('{ about }')
@@ -371,35 +417,36 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertTrue(all([category == DataSource.Category.WARGA for category in categories]))
 
     def test_data_source_query_detail_with_given_id(self):
-        data_source_detail = {
-            'pic_name': 'pic test',
-            'pic_ktp': '1234567890',
-            'pic_phone': '0812389120',
-            'pic_position': 'test',
-        }
+        warga_detail = DataSourceWarga.objects.get(pic_ktp='1234567892')
+
         data_source_pekerja = DataSource.objects.create(
             category=DataSource.Category.PEKERJA
         )
         pekerja_detail = DataSourcePekerja.objects.create(
-            data_source=data_source_pekerja,
+            pic_name='pic test',
+            pic_ktp='1234567890',
+            pic_phone='0812389120',
+            pic_position='test',
             profession='tester',
             location='jl tester',
-            **data_source_detail
+            data_source=data_source_pekerja,
         )
         data_source_institusi = DataSource.objects.create(
             category=DataSource.Category.INSTITUSI
         )
-        pekerja_detail = DataSourceInstitusi.objects.create(
-            data_source=data_source_institusi,
+        institusi_detail = DataSourceInstitusi.objects.create(
+            pic_name='pic test',
+            pic_ktp='1234567891',
+            pic_phone='0812389120',
+            pic_position='test',
             name='test',
             province='test',
-            regency='test',
             sub_district='test',
             village='test',
             rw='01',
             rt='01',
             address='test',
-            **data_source_detail
+            data_source=data_source_institusi,
         )
         response = self.query(
             '''
@@ -419,12 +466,361 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             }
             ''',
             op_name='dataSourceQuery',
-            variables={'id1': 2, 'id2': 3, 'id3': 4}
+            variables={'id1': warga_detail.data_source.pk, 
+                        'id2': pekerja_detail.data_source.pk, 
+                        'id3': institusi_detail.data_source.pk}
         )
+
+        self.assertResponseNoErrors(response)
+
         content = json.loads(response.content)
-        self.assertEqual(content['data']['q1']['id'], '2')
+        self.assertEqual(content['data']['q1']['id'], str(warga_detail.data_source.pk))
         self.assertEqual(content['data']['q1']['detail']['__typename'], 'DataSourceWargaType')
-        self.assertEqual(content['data']['q2']['id'], '3')
+        self.assertEqual(content['data']['q2']['id'], str(pekerja_detail.data_source.pk))
         self.assertEqual(content['data']['q2']['detail']['__typename'], 'DataSourcePekerjaType')
-        self.assertEqual(content['data']['q3']['id'], '4')
+        self.assertEqual(content['data']['q3']['id'], str(institusi_detail.data_source.pk))
         self.assertEqual(content['data']['q3']['detail']['__typename'], 'DataSourceInstitusiType')
+
+
+    def test_data_source_mutation_can_add_new_data_source(self):
+        existing_data_source_ammount = DataSource.objects.count()
+        response = self.query(
+            '''
+            mutation dataSourceMutation($input: DataSourceMutationInput!){
+                dataSourceMutation(input: $input){
+                    dataSource{
+                        category
+                    }
+                }
+            }
+            ''',
+            op_name='dataSourceMutation',
+            input_data={
+                'category':'WARGA',
+            }
+        )
+
+        #This validates the status code and if you get errors
+        self.assertResponseNoErrors(response)
+
+        #Validate content
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['dataSourceMutation']['dataSource']['category'], "WARGA")
+        
+        #Validate successful save to db
+        new_ammount = existing_data_source_ammount + 1
+        self.assertEqual(DataSource.objects.count(), new_ammount)
+
+    def test_data_source_warga_mutation_can_add_new_data_source_warga(self):
+        pic_ktp = "123456789012"
+        old_ammount = DataSourceWarga.objects.count()
+        data_source_warga = DataSource.objects.create(category=DataSource.Category.WARGA)
+
+        response = self.query(
+            '''
+            mutation dataSourceWargaMutation($input: DataSourceWargaMutationInput!){
+                dataSourceWargaMutation(input: $input){
+                    dataSourceWarga{
+                        picName
+                        picKtp
+                        picPhone
+                        picPosition
+                        province
+                        regency
+                        subDistrict
+                        village
+                        rt
+                        rw
+                        dataSource{id}
+                    }
+                }
+            }
+            ''',
+            op_name='dataSourceWargaMutation',
+            input_data={
+                "picName": "Anjay",
+                "picKtp": pic_ktp,
+                "picPhone": "1231231234",
+                "picPosition": "Head",
+                "province": "Jawa Barat",
+                "regency": "Kebumen",
+                "subDistrict": "Anjaydsitrict",
+                "village": "Desa dusun",
+                "rt": "001",
+                "rw": "002",
+                "dataSource":data_source_warga.pk
+            }
+        )
+        # This validates the status code and if you get errors
+        self.assertResponseNoErrors(response)
+
+        # Validate content
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['dataSourceWargaMutation']
+                        ['dataSourceWarga']['picKtp'], pic_ktp)
+
+        # Validate successful save to db
+        new_ammount = old_ammount + 1
+        self.assertEqual(DataSourceWarga.objects.count(), new_ammount)
+        source_warga = DataSourceWarga.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source_warga.pic_name, "Anjay")
+
+    def test_data_source_warga_mutation_can_update_data_source_warga(self):
+        pic_ktp = "123456789012"
+        new_pic_name = "Aryo"
+        data_source_warga = DataSource.objects.create(
+            category=DataSource.Category.WARGA
+        )
+
+        warga_detail = DataSourceWarga.objects.create(
+            pic_ktp = pic_ktp,
+            pic_name = 'wargai',
+            pic_phone = '123456789012',
+            pic_position = 'Ketua RT',
+            province = 'Test Barat',
+            regency = 'Kabupaten test',
+            sub_district = 'Testmatan',
+            village = 'Desa tes',
+            rt = '001',
+            rw = '002',
+            data_source = data_source_warga
+        )
+
+        response = self.query(
+            '''
+            mutation dataSourceWargaMutation($input: DataSourceWargaMutationInput!){
+                dataSourceWargaMutation(input: $input){
+                    dataSourceWarga{
+                        picName
+                    }
+                }
+            }
+            ''',
+            op_name='dataSourceWargaMutation',
+            input_data={
+                "picName": new_pic_name,
+                "picKtp": pic_ktp,
+                "picPhone": "1231231234",
+                "picPosition": "Head",
+                "province": "Jawa Barat",
+                "regency": "Kebumen",
+                "subDistrict": "Anjaydsitrict",
+                "village": "Desa dusun",
+                "rt": "001",
+                "rw": "002",
+                "dataSource":data_source_warga.pk,
+                "id": warga_detail.pk
+            }
+        )
+
+        #Validate success update data source warga
+        source = DataSourceWarga.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source.pic_name, new_pic_name)
+
+    def test_data_source_pekerja_mutation_can_add_new_data_source_pekerja(self):
+        pic_ktp = "123456789012"
+        pic_name = "lulu"
+        old_ammount = DataSourcePekerja.objects.count()
+        data_source_pekerja = DataSource.objects.create(
+            category=DataSource.Category.PEKERJA
+        )
+        
+        response = self.query(
+            '''
+            mutation dataSourcePekerjaMutation($input: DataSourcePekerjaMutationInput!){
+                dataSourcePekerjaMutation(input: $input){
+                        dataSourcePekerja{
+                        picName
+                        picKtp
+                        picPhone
+                        picPosition
+                        profession
+                        location
+                        dataSource{id}
+                    }
+                }
+            }
+
+            ''',
+            op_name='dataSourcePekerjaMutation',
+            input_data={
+                "picName": pic_name,
+                "picKtp": pic_ktp,
+                "picPhone": "098765432123",
+                "picPosition": "Leader",
+                "profession": "Programmer",
+                "location": "Bogor",
+                "dataSource": data_source_pekerja.pk,
+            }
+        )
+
+        # This validates the status code and if you get errors
+        self.assertResponseNoErrors(response)
+
+        # Validate content
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['dataSourcePekerjaMutation']
+                        ['dataSourcePekerja']['picKtp'], pic_ktp)
+
+        # Validate successful save to db
+        new_ammount = old_ammount + 1
+        self.assertEqual(DataSourcePekerja.objects.count(), new_ammount)
+        source = DataSourcePekerja.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source.pic_name, pic_name)
+
+
+    def test_data_source_pekerja_mutation_can_update_data_source_pekerja(self):
+        pic_ktp = "123456789012"
+        new_pic_name = "Aryo"
+
+        data_source_pekerja = DataSource.objects.create(
+            category=DataSource.Category.PEKERJA
+        )
+        source_pekerja = DataSourcePekerja.objects.create(
+            pic_name = 'wargai',
+            pic_ktp = pic_ktp,
+            pic_phone = '123456789012',
+            pic_position = 'Ketua RT',
+            profession = 'tester',
+            location = 'jl tester',
+            data_source=data_source_pekerja,
+        )
+
+        response = self.query(
+            '''
+            mutation dataSourcePekerjaMutation($input: DataSourcePekerjaMutationInput!){
+                dataSourcePekerjaMutation(input: $input){
+                        dataSourcePekerja{
+                        picName
+                    }
+                }
+            }
+            ''',
+            op_name = "dataSourcePekerjaMutation",
+            input_data={
+                "picName": new_pic_name,
+                "picKtp": pic_ktp,
+                "picPhone": '123456789012',
+                "picPosition": 'Ketua RT',
+                "profession": 'tester',
+                "location": 'jl tester',
+                "dataSource": data_source_pekerja.pk,
+                "id": source_pekerja.pk
+            }
+        )
+
+        #Validate successful update to data source pekerja 
+        source = DataSourcePekerja.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source.pic_name, new_pic_name)
+
+    def test_data_source_institusi_mutation_can_add_new_data_source_institusi(self):
+        pic_ktp = "109872901098"
+        pic_name = "Susi"
+        old_ammount = DataSourceInstitusi.objects.count()
+        data_source_institusi = DataSource.objects.create(
+            category=DataSource.Category.INSTITUSI
+        )
+
+        response = self.query(
+            '''
+            mutation dataSourceInstitusiMutation($input: DataSourceInstitusiMutationInput!){
+                dataSourceInstitusiMutation(input: $input){
+                    dataSourceInstitusi{
+                        picName
+                        picKtp
+                        picPhone
+                        picPosition
+                    }
+                }
+            }
+        
+            ''',
+            op_name="dataSourceInstitusiMutation",
+            input_data={
+                "picName": pic_name,
+                "picKtp": pic_ktp,
+                "picPhone": "09876544323",
+                "picPosition": "Vice",
+                "name": "Pesantren Yatim",
+                "province": "Jawa Barat",
+                "subDistrict": "Dusun",
+                "village": "desa",
+                "rt": "002",
+                "rw": "001",
+                "address": "Jalan duku empat 1",
+                "dataSource": data_source_institusi.pk,
+            }
+        )
+
+        # This validates the status code and if you get errors
+        self.assertResponseNoErrors(response)
+
+        #Validate content
+        content = json.loads(response.content)
+        self.assertEqual(content['data']['dataSourceInstitusiMutation']
+                        ['dataSourceInstitusi']['picKtp'], pic_ktp)
+
+        #Validate success save to db
+        new_ammount = old_ammount + 1
+        self.assertEqual(DataSourceInstitusi.objects.count(), new_ammount)
+        source = DataSourceInstitusi.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source.pic_name, pic_name)
+
+
+    def test_data_source_institusi_mutation_can_update_data_source_institusi(self):
+        pic_ktp = '12345678901234'
+        new_pic_name = 'Rofi Arief'
+
+        data_source_institusi = DataSource.objects.create(
+            category=DataSource.Category.INSTITUSI
+        )
+
+        source_institusi = DataSourceInstitusi.objects.create(
+            pic_ktp = pic_ktp,
+            pic_name = 'Rofi',
+            pic_phone = '123456789012',
+            pic_position = 'Head',
+            name = 'Institusi Bandung',
+            province = 'Jawa Barat',
+            sub_district = 'Bogor',
+            village = 'Desa',
+            rt = '001',
+            rw = '001',
+            address = 'Jalan suatu desa no 1',
+            data_source = data_source_institusi,
+        )
+
+        response = self.query(
+            '''
+            mutation dataSourceInstitusiMutation($input: DataSourceInstitusiMutationInput!){
+                dataSourceInstitusiMutation(input: $input){
+                    dataSourceInstitusi{
+                        picName
+                        picKtp
+                        picPhone
+                        picPosition
+                    }
+                }
+            }
+            ''',
+            op_name = 'dataSourceInstitusiMutation',
+            input_data = {
+                "picKtp": pic_ktp,
+                "picName": new_pic_name,
+                "picPhone": "123456789012",
+                "picPosition": "Head",
+                "name": "Institusi Bandung",
+                "province": "Jawa Barat",
+                "subDistrict": "Bogor",
+                "village": "Desa",
+                "rt": "001",
+                "rw": "001",
+                "address": "Jalan suatu desa no 1",
+                "dataSource": data_source_institusi.pk,
+                "id": source_institusi.pk,
+            }
+        )
+
+        #Validate success update data source institusi
+        source = DataSourceInstitusi.objects.get(pic_ktp=pic_ktp)
+        self.assertEqual(source.pic_name, new_pic_name)

@@ -2,7 +2,7 @@ import graphene
 
 from graphene_django import DjangoObjectType
 
-from .mustahik.mutations import MustahikMutation, DeleteMustahik
+from .mustahik.mutations import MustahikMutation, DeleteMustahik, DataSourceMutation, DataSourceWargaMutation, DataSourceInstitusiMutation, DataSourcePekerjaMutation
 from .mustahik.query import MustahikQuery
 
 ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '
@@ -20,6 +20,6 @@ class Query(MustahikQuery, graphene.ObjectType):
 class Mutation(graphene.ObjectType):
     mustahik_mutation = MustahikMutation.Field()
     delete_mustahik = DeleteMustahik.Field()
-
+    
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

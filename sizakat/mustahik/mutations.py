@@ -2,9 +2,9 @@ import graphene
 
 from graphene_django.forms.mutation import DjangoModelFormMutation
 
-from .forms import MustahikForm
+from .forms import MustahikForm, DataSourceForm, DataSourceWargaForm, DataSourceInstitusiForm, DataSourcePekerjaForm
 from .models import Mustahik
-from .types import MustahikType
+from .types import MustahikType, DataSourceInstitusiType,  DataSourcePekerjaType, DataSourceWargaType, DataSourceType
 
 
 class MustahikMutation(DjangoModelFormMutation):
@@ -30,3 +30,27 @@ class DeleteMustahik(graphene.Mutation):
         mustahik.delete()
         deleted = True
         return DeleteMustahik(deleted=deleted, id_mustahik=id, name=name, no_ktp=no_ktp)
+
+class DataSourceMutation(DjangoModelFormMutation):
+    dataSource = graphene.Field(DataSourceType)
+
+    class Meta:
+        form_class = DataSourceForm
+
+class DataSourceWargaMutation(DjangoModelFormMutation):
+    dataSourceWarga = graphene.Field(DataSourceWargaType)
+
+    class Meta:
+        form_class = DataSourceWargaForm
+
+class DataSourceInstitusiMutation(DjangoModelFormMutation):
+    dataSourceInstitusi = graphene.Field(DataSourceInstitusiType)
+
+    class Meta:
+        form_class = DataSourceInstitusiForm
+
+class DataSourcePekerjaMutation(DjangoModelFormMutation):
+    dataSourcePekerja = graphene.Field(DataSourcePekerjaType)
+
+    class Meta:
+        form_class = DataSourcePekerjaForm
