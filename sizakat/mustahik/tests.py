@@ -45,18 +45,18 @@ class MustahikModelTestCase(TestCase):
         )
 
         institusi_detail = DataSourceInstitusi.objects.create(
-            pic_ktp = '12345678901234',
-            pic_name = 'instisusi',
-            pic_phone = '123456789012',
-            pic_position = 'Head',
-            name = 'Institusi Bandung',
-            province = 'Jawa Barat',
-            sub_district = 'Bogor',
-            village = 'Desa',
-            rt = '001',
-            rw = '001',
-            address = 'Jalan suatu desa no 1',
-            data_source = data_source_institusi,
+            pic_ktp='12345678901234',
+            pic_name='instisusi',
+            pic_phone='123456789012',
+            pic_position='Head',
+            name='Institusi Bandung',
+            province='Jawa Barat',
+            sub_district='Bogor',
+            village='Desa',
+            rt='001',
+            rw='001',
+            address='Jalan suatu desa no 1',
+            data_source=data_source_institusi,
         )
 
         data_source_warga = DataSource.objects.create(
@@ -64,17 +64,17 @@ class MustahikModelTestCase(TestCase):
         )
 
         warga_detail = DataSourceWarga.objects.create(
-            pic_ktp = '12345678901111',
-            pic_name = 'wargai',
-            pic_phone = '123456789012',
-            pic_position = 'Ketua RT',
-            province = 'Test Barat',
-            regency = 'Kabupaten test',
-            sub_district = 'Testmatan',
-            village = 'Desa tes',
-            rt = '001',
-            rw = '002',
-            data_source = data_source_warga
+            pic_ktp='12345678901111',
+            pic_name='wargai',
+            pic_phone='123456789012',
+            pic_position='Ketua RT',
+            province='Test Barat',
+            regency='Kabupaten test',
+            sub_district='Testmatan',
+            village='Desa tes',
+            rt='001',
+            rw='002',
+            data_source=data_source_warga
         )
 
     def test_mustahik_creation(self):
@@ -91,7 +91,7 @@ class MustahikModelTestCase(TestCase):
     def test_data_source_warga_creation(self):
         data_source_warga = DataSourceWarga.objects.get(pic_ktp='12345678901111')
         self.assertTrue(isinstance(data_source_warga, DataSourceWarga))
-    
+
     def test_data_source_institusi_creation(self):
         data_source_institusi = DataSourceInstitusi.objects.get(pic_ktp='12345678901234')
         self.assertTrue(isinstance(data_source_institusi, DataSourceInstitusi))
@@ -127,7 +127,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             gender=Mustahik.Gender.LAKILAKI,
             data_source=data_source_warga
         )
-
 
     def test_about_query(self):
         response = self.query('{ about }')
@@ -466,9 +465,9 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             }
             ''',
             op_name='dataSourceQuery',
-            variables={'id1': warga_detail.data_source.pk, 
-                        'id2': pekerja_detail.data_source.pk, 
-                        'id3': institusi_detail.data_source.pk}
+            variables={'id1': warga_detail.data_source.pk,
+                       'id2': pekerja_detail.data_source.pk,
+                       'id3': institusi_detail.data_source.pk}
         )
 
         self.assertResponseNoErrors(response)
@@ -480,7 +479,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(content['data']['q2']['detail']['__typename'], 'DataSourcePekerjaType')
         self.assertEqual(content['data']['q3']['id'], str(institusi_detail.data_source.pk))
         self.assertEqual(content['data']['q3']['detail']['__typename'], 'DataSourceInstitusiType')
-
 
     def test_data_source_mutation_can_add_new_data_source(self):
         existing_data_source_ammount = DataSource.objects.count()
@@ -496,18 +494,18 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             ''',
             op_name='dataSourceMutation',
             input_data={
-                'category':'WARGA',
+                'category': 'WARGA',
             }
         )
 
-        #This validates the status code and if you get errors
+        # This validates the status code and if you get errors
         self.assertResponseNoErrors(response)
 
-        #Validate content
+        # Validate content
         content = json.loads(response.content)
         self.assertEqual(content['data']['dataSourceMutation']['dataSource']['category'], "WARGA")
-        
-        #Validate successful save to db
+
+        # Validate successful save to db
         new_ammount = existing_data_source_ammount + 1
         self.assertEqual(DataSource.objects.count(), new_ammount)
 
@@ -548,7 +546,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "village": "Desa dusun",
                 "rt": "001",
                 "rw": "002",
-                "dataSource":data_source_warga.pk
+                "dataSource": data_source_warga.pk
             }
         )
         # This validates the status code and if you get errors
@@ -557,7 +555,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         # Validate content
         content = json.loads(response.content)
         self.assertEqual(content['data']['dataSourceWargaMutation']
-                        ['dataSourceWarga']['picKtp'], pic_ktp)
+                         ['dataSourceWarga']['picKtp'], pic_ktp)
 
         # Validate successful save to db
         new_ammount = old_ammount + 1
@@ -573,17 +571,17 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         )
 
         warga_detail = DataSourceWarga.objects.create(
-            pic_ktp = pic_ktp,
-            pic_name = 'wargai',
-            pic_phone = '123456789012',
-            pic_position = 'Ketua RT',
-            province = 'Test Barat',
-            regency = 'Kabupaten test',
-            sub_district = 'Testmatan',
-            village = 'Desa tes',
-            rt = '001',
-            rw = '002',
-            data_source = data_source_warga
+            pic_ktp=pic_ktp,
+            pic_name='wargai',
+            pic_phone='123456789012',
+            pic_position='Ketua RT',
+            province='Test Barat',
+            regency='Kabupaten test',
+            sub_district='Testmatan',
+            village='Desa tes',
+            rt='001',
+            rw='002',
+            data_source=data_source_warga
         )
 
         response = self.query(
@@ -608,12 +606,12 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "village": "Desa dusun",
                 "rt": "001",
                 "rw": "002",
-                "dataSource":data_source_warga.pk,
+                "dataSource": data_source_warga.pk,
                 "id": warga_detail.pk
             }
         )
 
-        #Validate success update data source warga
+        # Validate success update data source warga
         source = DataSourceWarga.objects.get(pic_ktp=pic_ktp)
         self.assertEqual(source.pic_name, new_pic_name)
 
@@ -624,7 +622,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         data_source_pekerja = DataSource.objects.create(
             category=DataSource.Category.PEKERJA
         )
-        
+
         response = self.query(
             '''
             mutation dataSourcePekerjaMutation($input: DataSourcePekerjaMutationInput!){
@@ -660,14 +658,13 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         # Validate content
         content = json.loads(response.content)
         self.assertEqual(content['data']['dataSourcePekerjaMutation']
-                        ['dataSourcePekerja']['picKtp'], pic_ktp)
+                         ['dataSourcePekerja']['picKtp'], pic_ktp)
 
         # Validate successful save to db
         new_ammount = old_ammount + 1
         self.assertEqual(DataSourcePekerja.objects.count(), new_ammount)
         source = DataSourcePekerja.objects.get(pic_ktp=pic_ktp)
         self.assertEqual(source.pic_name, pic_name)
-
 
     def test_data_source_pekerja_mutation_can_update_data_source_pekerja(self):
         pic_ktp = "123456789012"
@@ -677,12 +674,12 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             category=DataSource.Category.PEKERJA
         )
         source_pekerja = DataSourcePekerja.objects.create(
-            pic_name = 'wargai',
-            pic_ktp = pic_ktp,
-            pic_phone = '123456789012',
-            pic_position = 'Ketua RT',
-            profession = 'tester',
-            location = 'jl tester',
+            pic_name='wargai',
+            pic_ktp=pic_ktp,
+            pic_phone='123456789012',
+            pic_position='Ketua RT',
+            profession='tester',
+            location='jl tester',
             data_source=data_source_pekerja,
         )
 
@@ -696,7 +693,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 }
             }
             ''',
-            op_name = "dataSourcePekerjaMutation",
+            op_name="dataSourcePekerjaMutation",
             input_data={
                 "picName": new_pic_name,
                 "picKtp": pic_ktp,
@@ -709,7 +706,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             }
         )
 
-        #Validate successful update to data source pekerja 
+        # Validate successful update to data source pekerja
         source = DataSourcePekerja.objects.get(pic_ktp=pic_ktp)
         self.assertEqual(source.pic_name, new_pic_name)
 
@@ -755,17 +752,16 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         # This validates the status code and if you get errors
         self.assertResponseNoErrors(response)
 
-        #Validate content
+        # Validate content
         content = json.loads(response.content)
         self.assertEqual(content['data']['dataSourceInstitusiMutation']
-                        ['dataSourceInstitusi']['picKtp'], pic_ktp)
+                         ['dataSourceInstitusi']['picKtp'], pic_ktp)
 
-        #Validate success save to db
+        # Validate success save to db
         new_ammount = old_ammount + 1
         self.assertEqual(DataSourceInstitusi.objects.count(), new_ammount)
         source = DataSourceInstitusi.objects.get(pic_ktp=pic_ktp)
         self.assertEqual(source.pic_name, pic_name)
-
 
     def test_data_source_institusi_mutation_can_update_data_source_institusi(self):
         pic_ktp = '12345678901234'
@@ -776,18 +772,18 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         )
 
         source_institusi = DataSourceInstitusi.objects.create(
-            pic_ktp = pic_ktp,
-            pic_name = 'Rofi',
-            pic_phone = '123456789012',
-            pic_position = 'Head',
-            name = 'Institusi Bandung',
-            province = 'Jawa Barat',
-            sub_district = 'Bogor',
-            village = 'Desa',
-            rt = '001',
-            rw = '001',
-            address = 'Jalan suatu desa no 1',
-            data_source = data_source_institusi,
+            pic_ktp=pic_ktp,
+            pic_name='Rofi',
+            pic_phone='123456789012',
+            pic_position='Head',
+            name='Institusi Bandung',
+            province='Jawa Barat',
+            sub_district='Bogor',
+            village='Desa',
+            rt='001',
+            rw='001',
+            address='Jalan suatu desa no 1',
+            data_source=data_source_institusi,
         )
 
         response = self.query(
@@ -803,8 +799,8 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 }
             }
             ''',
-            op_name = 'dataSourceInstitusiMutation',
-            input_data = {
+            op_name='dataSourceInstitusiMutation',
+            input_data={
                 "picKtp": pic_ktp,
                 "picName": new_pic_name,
                 "picPhone": "123456789012",
@@ -821,6 +817,25 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             }
         )
 
-        #Validate success update data source institusi
+        # Validate success update data source institusi
         source = DataSourceInstitusi.objects.get(pic_ktp=pic_ktp)
         self.assertEqual(source.pic_name, new_pic_name)
+
+    def test_delete_datasource_mutations_can_delete_datasource(self):
+        count = DataSource.objects.count()
+        datasource = DataSource.objects.all()[0]
+        response = self.query(
+            '''
+                mutation deleteDataSource($id: ID) {
+                    deleteDataSource(id: $id) {
+                        deleted
+                    }
+                }
+            ''',
+            op_name='deleteDataSource',
+            variables={'id': datasource.pk}
+        )
+        self.assertResponseNoErrors(response)
+        content = json.loads(response.content)
+        self.assertTrue(content['data']['deleteDataSource']['deleted'])
+        self.assertEquals(DataSource.objects.count(), count-1)
