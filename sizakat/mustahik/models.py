@@ -51,6 +51,14 @@ class DataSource(models.Model):
 
     category = models.CharField(max_length=32, choices=Category.choices)
 
+    def get_source_detail(self):
+        if self.category == DataSource.Category.INSTITUSI:
+            return DataSourceInstitusi.objects.get(data_source=self)
+        if self.category == DataSource.Category.PEKERJA:
+            return DataSourcePekerja.objects.get(data_source=self)
+        if self.category == DataSource.Category.WARGA:
+            return DataSourceWarga.objects.get(data_source=self)
+
 
 class DataSourceDetail(models.Model):
     class Meta:

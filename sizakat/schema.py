@@ -2,7 +2,11 @@ import graphene
 
 from graphene_django import DjangoObjectType
 
-from .mustahik.mutations import MustahikMutation, DeleteMustahik, DataSourceMutation, DataSourceWargaMutation, DataSourceInstitusiMutation, DataSourcePekerjaMutation
+from .mustahik.mutations import (
+    MustahikMutation, DeleteMustahik, DataSourceMutation,
+    DataSourceWargaMutation, DataSourceInstitusiMutation,
+    DataSourcePekerjaMutation
+)
 from .mustahik.query import MustahikQuery
 
 ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '

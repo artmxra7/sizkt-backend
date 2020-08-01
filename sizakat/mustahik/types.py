@@ -45,12 +45,6 @@ class DataSourceType(DjangoObjectType):
             'datasourceinstitusi', 'datasourcepekerja', 'datasourcewarga'
         )
 
-    data_source_detail = graphene.Field(DataSourceDetailType)
-
-    def resolve_data_source_detail(self, info):
-        if self.category == DataSource.Category.INSTITUSI:
-            return DataSourceInstitusi.objects.get(data_source__pk=self.pk)
-        if self.category == DataSource.Category.PEKERJA:
-            return DataSourcePekerja.objects.get(data_source__pk=self.pk)
-        if self.category == DataSource.Category.WARGA:
-            return DataSourceWarga.objects.get(data_source__pk=self.pk)
+    data_source_detail = graphene.Field(
+        DataSourceDetailType, source='get_source_detail'
+    )
