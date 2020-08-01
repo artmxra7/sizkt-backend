@@ -278,12 +278,9 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         mustahik_id = mustahik.pk
         response = self.query(
             '''
-                mutation deleteMustahik($id: ID) {
+                mutation deleteMustahik($id: ID!) {
                     deleteMustahik(id: $id) {
                         deleted
-                        idMustahik
-                        name
-                        noKtp
                     }
                 }
             ''',
@@ -826,7 +823,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         datasource = DataSource.objects.all()[0]
         response = self.query(
             '''
-                mutation deleteDataSource($id: ID) {
+                mutation deleteDataSource($id: ID!) {
                     deleteDataSource(id: $id) {
                         deleted
                     }

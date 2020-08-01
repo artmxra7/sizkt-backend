@@ -22,20 +22,13 @@ class MustahikMutation(DjangoModelFormMutation):
 
 class DeleteMustahik(graphene.Mutation):
     class Arguments:
-        id = graphene.ID()
+        id = graphene.ID(required=True)
 
     deleted = graphene.Boolean()
-    id_mustahik = graphene.ID()
-    name = graphene.String()
-    no_ktp = graphene.String()
 
     def mutate(self, info, id):
-        mustahik = Mustahik.objects.get(pk=id)
-        name = mustahik.name
-        no_ktp = mustahik.no_ktp
-        mustahik.delete()
-        deleted = True
-        return DeleteMustahik(deleted=deleted, id_mustahik=id, name=name, no_ktp=no_ktp)
+        Mustahik.objects.get(pk=id).delete()
+        return DeleteMustahik(deleted=True)
 
 
 class DataSourceMutation(DjangoModelFormMutation):
@@ -47,7 +40,7 @@ class DataSourceMutation(DjangoModelFormMutation):
 
 class DeleteDataSource(graphene.Mutation):
     class Arguments:
-        id = graphene.ID()
+        id = graphene.ID(required=True)
 
     deleted = graphene.Boolean()
 
