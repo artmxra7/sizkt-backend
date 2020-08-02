@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Mustahik, DataSource, DataSourceWarga, DataSourceInstitusi, DataSourcePekerja 
+from .models import Mustahik, DataSource, DataSourceWarga, DataSourceInstitusi, DataSourcePekerja
 
 
 class MustahikForm(forms.ModelForm):
@@ -15,7 +15,9 @@ class MustahikForm(forms.ModelForm):
             'status',
             'gender',
             'data_source',
+            'photo',
         ]
+
 
 class DataSourceForm(forms.ModelForm):
     class Meta:
@@ -23,6 +25,7 @@ class DataSourceForm(forms.ModelForm):
         fields = [
             'category',
         ]
+
 
 class DataSourceWargaForm(forms.ModelForm):
     class Meta:
@@ -41,6 +44,7 @@ class DataSourceWargaForm(forms.ModelForm):
             'data_source',
         ]
 
+
 class DataSourceInstitusiForm(forms.ModelForm):
     class Meta:
         model = DataSourceInstitusi
@@ -58,6 +62,7 @@ class DataSourceInstitusiForm(forms.ModelForm):
             'address',
             'data_source',
         ]
+
 
 class DataSourcePekerjaForm(forms.ModelForm):
     class Meta:
