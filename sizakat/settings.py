@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
+    'corsheaders',
+    'sizakat.mustahik',
 ]
 
 GRAPHENE = {
@@ -47,12 +49,16 @@ GRAPHENE = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+CORS_ORIGIN_WHITELIST = os.environ.get(
+    'CORS_ORIGIN_WHITELIST', 'http://localhost:3000').split()
 
 ROOT_URLCONF = 'sizakat.urls'
 
@@ -86,7 +92,7 @@ DATABASES = {
 
 if 'SQL_DATABASE' in os.environ:
     DATABASES = {
-    'default': {
+        'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': os.environ.get('SQL_DATABASE'),
             'USER': os.environ.get('SQL_USER'),
@@ -133,4 +139,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/img/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images')
