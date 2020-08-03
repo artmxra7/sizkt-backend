@@ -24,13 +24,14 @@ class MustahikMutation(DjangoModelFormMutation):
     @classmethod
     def mutate_and_get_payload(cls, root, info, **input):
         form = cls.get_form(root, info, **input)
-        photo = info.context.FILES['photo']
-        if not validate_photo(photo):
+        photo = info.context.FILES.get('photo', None)
+        if photo and not validate_photo(photo):
             form.add_error('photo', 'invalid photo format')
 
         if form.is_valid():
             mustahik = form.save(commit=False)
-            mustahik.photo = photo
+            if photo:
+                mustahik.photo = photo
             mustahik.save()
             kwargs = {cls._meta.return_field_name: mustahik}
             return cls(errors=[], **kwargs)

@@ -157,6 +157,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "birthdate": "1998-03-12",
                 "status": "MISKIN",
                 "gender": "L",
+                "photo": "",
                 "dataSource": data_source.pk
             }
         )
@@ -205,6 +206,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "birthdate": "1987-06-05",
                 "status": "MUSAFIR",
                 "gender": "L",
+                "photo": "",
                 "id": mustahik.pk,
                 "dataSource": data_source.pk
             }
