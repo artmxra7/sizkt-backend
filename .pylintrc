@@ -1,0 +1,4 @@
+[pylint]
+disable = C0114,C0115,C0116,E0401,R0903,R0201,W0613
+good-names = setUp
+max-line-length = 119
