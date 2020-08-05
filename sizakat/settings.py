@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'graphene_django',
     'corsheaders',
     'sizakat.mustahik',
+    'sizakat.transaction',
 ]
 
 GRAPHENE = {
