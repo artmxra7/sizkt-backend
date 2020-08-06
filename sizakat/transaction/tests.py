@@ -108,3 +108,106 @@ class TransactionGraphQLTest(GraphQLTestCase):
         transaction = json.loads(response.content)['data']['transaction']
         self.assertEqual(str(transaction['id']), str(self.transaction.pk))
         self.assertEqual(transaction['paymentType'], self.transaction.payment_type)
+
+    def test_create_muzakki_mutation(self):
+        count_muzakki = Muzakki.objects.all().count()
+        self.query(
+            '''
+            mutation {
+                muzakkiMutation(input: {
+                    noKtp: "1234",
+                    name: "test create muzakki",
+                }) {
+                    muzakki {
+                        id
+                        noKtp
+                        name
+                    }
+                    errors {
+                        field
+                        messages
+                    }
+                }
+            }
+            '''
+        )
+        self.assertEqual(count_muzakki + 1, Muzakki.objects.all().count())
+
+    def test_create_transaction_mutation(self):
+        count_transaction = Transaction.objects.all().count()
+        response = self.query(
+            '''
+            mutation {
+                transactionMutation(input: {
+                    paymentType: "CASH"
+                }) {
+                    transaction {
+                        id
+                        paymentType
+                        paymentConfirmation
+                    }
+                    errors {
+                        field
+                        messages
+                    }
+                }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+        self.assertEqual(count_transaction + 1, Transaction.objects.all().count())
+
+    def test_update_transaction_mutation(self):
+        transaction = Transaction.objects.get(pk=self.transaction.pk)
+        self.query(
+            '''
+            mutation {
+                transactionMutation(input: {
+                    id: %d,
+                    paymentType: "%s",
+                    paymentConfirmation: true
+                }) {
+                    transaction {
+                        id
+                        paymentType
+                        paymentConfirmation
+                    }
+                    errors {
+                        field
+                        messages
+                    }
+                }
+            }
+            ''' % (self.transaction.pk, self.transaction.payment_type)
+        )
+        updated_transaction = Transaction.objects.get(pk=self.transaction.pk)
+        self.assertFalse(transaction.payment_confirmation)
+        self.assertTrue(updated_transaction.payment_confirmation)
+
+    def test_create_zakat_transaction_mutation(self):
+        count_zakat_transaction = ZakatTransaction.objects.all().count()
+        self.query(
+            '''
+            mutation {
+                zakatTransactionMutation(input: {
+                    value: 50000,
+                    zakatType: %d,
+                    muzakki: %d,
+                    transaction: %d
+                }) {
+                    zakatTransaction {
+                        id
+                        value
+                    }
+                    errors {
+                        field
+                        messages
+                    }
+                }
+            }
+            ''' % (self.zakat_type.pk, self.muzakki.pk, self.transaction.pk)
+        )
+        self.assertEqual(
+            count_zakat_transaction + 1,
+            ZakatTransaction.objects.all().count()
+        )
