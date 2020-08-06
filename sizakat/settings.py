@@ -62,7 +62,7 @@ MIDDLEWARE = [
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60
 
-CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST').split()
+CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST','http://localhost:3000').split()
 
 ROOT_URLCONF = 'sizakat.urls'
 

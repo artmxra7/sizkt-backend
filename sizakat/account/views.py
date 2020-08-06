@@ -1,15 +1,15 @@
 import json
 
 from django.http import JsonResponse
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 
 from .email import send_reset_password_token
+import logging
 
 UserModel = get_user_model()
-
 
 def login_session(request):
     if request.method == 'POST':
@@ -21,18 +21,19 @@ def login_session(request):
             login(request, user)
             session = request.session.session_key
             return JsonResponse({'loggedIn': True, 'session': session})
+    if request.session.session_key == None:
+        return JsonResponse({'loggedIn': False})
+    else:
+        return JsonResponse({'loggedIn': True})
 
-    return JsonResponse({'loggedIn': False})
 
 
 def logout_session(request):
-    session_key = request.headers.get('Authorization', None)
-    session = Session.objects.filter(session_key=session_key)
-    if session.exists():
-        session.get().delete()
+    logout(request)
     return JsonResponse({'loggedOut': True})
 
 
+ 
 def reset_password(request):
     if request.method == 'POST':
         request_body = json.loads(request.body.decode('utf-8'))
