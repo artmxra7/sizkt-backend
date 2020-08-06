@@ -8,13 +8,14 @@ from .mustahik.mutations import (
     DataSourcePekerjaMutation, DeleteDataSource
 )
 from .mustahik.query import MustahikQuery
+from .transaction.query import TransactionQuery
 
 ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '
          'mengelola transaksi zakat. Sistem ini dibuat oleh tim lab 1231, '
          'yang dipimpin oleh Prof. Dr. Wisnu Jatmiko.')
 
 
-class Query(MustahikQuery, graphene.ObjectType):
+class Query(MustahikQuery, TransactionQuery, graphene.ObjectType):
     about = graphene.String()
 
     def resolve_about(self, info):

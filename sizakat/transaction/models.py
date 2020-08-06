@@ -27,6 +27,9 @@ class ZakatType(models.Model):
     name = models.CharField(max_length=50)
     item_type = models.CharField(max_length=32, choices=ItemType.choices)
 
+    def __str__(self):
+        return '%s - %s' % (self.name, self.ItemType[self.item_type].label)
+
 
 class Transaction(models.Model):
     class PaymentType(models.TextChoices):
