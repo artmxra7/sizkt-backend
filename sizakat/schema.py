@@ -9,6 +9,9 @@ from .mustahik.mutations import (
 )
 from .mustahik.query import MustahikQuery
 from .transaction.query import TransactionQuery
+from .transaction.mutations import (
+    MuzakkiMutation, TransactionMutation, ZakatTransactionMutation
+)
 
 ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '
          'mengelola transaksi zakat. Sistem ini dibuat oleh tim lab 1231, '
@@ -30,6 +33,10 @@ class Mutation(graphene.ObjectType):
     data_source_institusi_mutation = DataSourceInstitusiMutation.Field()
     data_source_pekerja_mutation = DataSourcePekerjaMutation.Field()
     delete_data_source = DeleteDataSource.Field()
+
+    muzakki_mutation = MuzakkiMutation.Field()
+    transaction_mutation = TransactionMutation.Field()
+    zakat_transaction_mutation = ZakatTransactionMutation.Field()
 
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
