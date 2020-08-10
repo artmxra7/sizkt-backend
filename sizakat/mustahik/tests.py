@@ -838,3 +838,36 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         content = json.loads(response.content)
         self.assertTrue(content['data']['deleteDataSource']['deleted'])
         self.assertEquals(DataSource.objects.count(), count-1)
+
+    def test_query_search_data_source_by_name(self):
+        response = self.query(
+            '''
+            {
+                dataSources(nameContains:"pinangranti") {
+                    id
+                    category
+                    dataSourceDetail {
+                    __typename
+                    ... on DataSourceInstitusiType {
+                        name
+                    }
+                    ... on DataSourcePekerjaType {
+                        profession
+                        location
+                    }
+                    ... on DataSourceWargaType {
+                        rt
+                        rw
+                        village
+                    }
+                    }
+                }
+            }
+            '''
+        )
+        self.assertResponseNoErrors(response)
+        datasources = json.loads(response.content)['data']['dataSources']
+        for datasource in datasources:
+            datasource_warga = datasource['dataSourceDetail']
+            kelurahan = datasource_warga.get('village', None)
+            self.assertIn(kelurahan, ['pinangranti', None])
