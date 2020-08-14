@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+SESSION_COOKIE_DOMAIN="localhost"
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60
 
@@ -144,5 +145,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('GMAIL_USER', 'your-gmail@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD', 'password')
+EMAIL_HOST_USER = os.environ.get('GMAIL_USER').split()
+EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD').split()

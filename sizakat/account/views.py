@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, get_user_model, logout
 from django.contrib.auth.tokens import default_token_generator as token_generator
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-
+from .models import User
 from .email import send_reset_password_token
 import logging
 
@@ -22,10 +22,9 @@ def login_session(request):
             session = request.session.session_key
             return JsonResponse({'loggedIn': True, 'session': session})
     if request.session.session_key == None:
-        return JsonResponse({'loggedIn': False})
+        return JsonResponse({'loggedIn': False}, status=404)
     else:
         return JsonResponse({'loggedIn': True})
-
 
 
 def logout_session(request):
