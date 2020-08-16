@@ -804,7 +804,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "picKtp": pic_ktp,
                 "picName": new_pic_name,
                 "picPhone": "123456789012",
-                "picPosition": "Head",
                 "name": "Institusi Bandung",
                 "province": "Jawa Barat",
                 "regency": "Kota",
@@ -812,7 +811,6 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
                 "village": "Desa",
                 "rt": "001",
                 "rw": "001",
-                "address": "Jalan suatu desa no 1",
                 "dataSource": data_source_institusi.pk,
                 "id": source_institusi.pk,
             }

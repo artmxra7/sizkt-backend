@@ -105,11 +105,12 @@ class DataSourceInstitusi(DataSourceDetail):
     rw = models.CharField(
         max_length=3, validators=[validate_numeric_character]
     )
-    address = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True, null=True)
     data_source = models.OneToOneField(
         'DataSource', on_delete=models.CASCADE,
         limit_choices_to={'category': DataSource.Category.INSTITUSI}
     )
+    pic_position = models.CharField(max_length=50, blank=True, null=True)
 
 
 class DataSourcePekerja(DataSourceDetail):
