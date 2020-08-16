@@ -8,19 +8,15 @@
 
 ## Environment
 
-### Backend environment
-
 File `.env`:
 
 ```
 SECRET_KEY=foobarbarfoo
 ALLOWED_HOSTS=*
 DEBUG=1
-SQL_DATABASE=sizakat
-SQL_USER=postgres
-SQL_PASSWORD=postgres
-SQL_HOST=db
-SQL_PORT=5432
+POSTGRES_DB=sizakat
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
 BACKEND_PORT=8000
 ```
 
@@ -36,22 +32,12 @@ BACKEND_PORT=8000
 
   https://docs.djangoproject.com/en/3.0/ref/settings/#debug
 
-- `SQL_*`
+- `POSTGRES_*`
 
   Pengaturan untuk database
+
+  https://github.com/docker-library/docs/tree/master/postgres#environment-variables
 
 - `BACKEND_PORT`
 
   Port untuk service backend. Digunakan dalam `docker-compose`
-
-### Database environment
-
-File `.db.env`
-
-```
-POSTGRES_DB=sizakat
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-```
-
-https://github.com/docker-library/docs/tree/master/postgres#environment-variables
