@@ -55,6 +55,7 @@ class DataSourceInstitusiForm(forms.ModelForm):
             'pic_position',
             'name',
             'province',
+            'regency',
             'sub_district',
             'village',
             'rt',
