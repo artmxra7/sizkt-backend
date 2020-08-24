@@ -13,26 +13,26 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
-from django.contrib.auth.decorators import login_required
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
-from .account.views import change_reset_password, login_session, logout_session, reset_password, verify_session
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-
-    # login path for form login
+    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
     path('accounts/login/',
          auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-
-    path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-
     path('login/', csrf_exempt(login_session)),
     path('logout/', csrf_exempt(logout_session)),
     path('reset-password/', csrf_exempt(reset_password)),
     path('change-reset-password/', csrf_exempt(change_reset_password)),
     path('verify-session/', verify_session),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    )
