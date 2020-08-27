@@ -479,6 +479,7 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         self.assertEqual(content['data']['q3']['id'], str(institusi_detail.data_source.pk))
         self.assertEqual(content['data']['q3']['detail']['__typename'], 'DataSourceInstitusiType')
 
+
     def test_data_source_mutation_can_add_new_data_source(self):
         existing_data_source_ammount = DataSource.objects.count()
         response = self.query(
