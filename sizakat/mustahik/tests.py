@@ -871,3 +871,38 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
             datasource_warga = datasource['dataSourceDetail']
             kelurahan = datasource_warga.get('village', None)
             self.assertIn(kelurahan, ['pinangranti', None])
+
+    def test_query_search_by_picname(self):
+        response = self.query(
+        '''
+        {
+            dataSources(picNameContains:"pic test") {
+                id
+                category
+                dataSourceDetail {
+                __typename
+                ... on DataSourceInstitusiType {
+                    picName
+                    name
+                }
+                ... on DataSourcePekerjaType {
+                    picName
+                    profession
+                    location
+                }
+                ... on DataSourceWargaType {
+                    picName
+                    rt
+                    rw
+                    village
+                }
+                }
+            }
+        }
+        ''')
+        self.assertResponseNoErrors(response)
+        datasources = json.loads(response.content)['data']['dataSources']
+        for datasource in datasources:
+            datasourceDetails = datasource['dataSourceDetail']
+            picName = datasourceDetails.get('picName', None)
+            self.assertIn(picName, ['pic test', None])
