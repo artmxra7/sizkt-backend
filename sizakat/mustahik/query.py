@@ -16,7 +16,8 @@ class MustahikQuery(graphene.ObjectType):
     mustahik = graphene.Field(MustahikType, id=graphene.ID(required=True))
     data_sources = graphene.List(
         DataSourceType, category=graphene.String(),
-        name_contains=graphene.String()
+        name_contains=graphene.String(),
+        picName_contains=graphene.String()
     )
     data_source = graphene.Field(DataSourceType, id=graphene.ID(required=True))
 
@@ -39,9 +40,13 @@ class MustahikQuery(graphene.ObjectType):
     def resolve_mustahik(self, info, id):
         return Mustahik.objects.get(pk=id)
 
+    def resolve_data_source(self, info, id):
+        return DataSource.objects.get(pk=id)
+
     def resolve_data_sources(self, info, **kwargs):
         category = kwargs.get('category', None)
         query = kwargs.get('name_contains', None)
+        picName = kwargs.get('picName_contains', None)
         filter_query = Q()
         if category:
             filter_query &= Q(category=category)
@@ -56,7 +61,14 @@ class MustahikQuery(graphene.ObjectType):
                 | Q(datasourcewarga__village__icontains=query)
             )
 
+        if picName:
+            filter_query &= (
+                Q(datasourcepekerja__pic_name__icontains=picName)
+                | Q(datasourceinstitusi__pic_name__icontains=picName)
+                | Q(datasourcewarga__pic_name__icontains=picName)
+                
+            )
+
         return DataSource.objects.filter(filter_query)
 
-    def resolve_data_source(self, info, id):
-        return DataSource.objects.get(pk=id)
+
