@@ -7,6 +7,8 @@ from .mustahik.mutations import (
     DataSourceWargaMutation, DataSourceInstitusiMutation,
     DataSourcePekerjaMutation, DeleteDataSource
 )
+from .account.query import AccountQuery
+from .account.mutations import AccountMutation
 from .mustahik.query import MustahikQuery
 from .transaction.query import TransactionQuery
 from .transaction.mutations import (
@@ -18,14 +20,19 @@ ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '
          'yang dipimpin oleh Prof. Dr. Wisnu Jatmiko.')
 
 
-class Query(MustahikQuery, TransactionQuery, graphene.ObjectType):
+class Query(
+    AccountQuery,
+    MustahikQuery,
+    TransactionQuery,
+    graphene.ObjectType
+):
     about = graphene.String()
 
     def resolve_about(self, info):
         return ABOUT
 
 
-class Mutation(graphene.ObjectType):
+class Mutation(AccountMutation, graphene.ObjectType):
     mustahik_mutation = MustahikMutation.Field()
     delete_mustahik = DeleteMustahik.Field()
     data_source_mutation = DataSourceMutation.Field()

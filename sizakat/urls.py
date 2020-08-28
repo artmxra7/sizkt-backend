@@ -16,20 +16,14 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from django.views.decorators.csrf import csrf_exempt
 from graphene_django.views import GraphQLView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('graphql/', csrf_exempt(GraphQLView.as_view(graphiql=True))),
-    path('accounts/login/',
-         auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('login/', csrf_exempt(login_session)),
-    path('logout/', csrf_exempt(logout_session)),
-    path('reset-password/', csrf_exempt(reset_password)),
-    path('change-reset-password/', csrf_exempt(change_reset_password)),
-    path('verify-session/', verify_session),
+    path('account/', include('sizakat.account.urls')),
 ]
 
 if settings.DEBUG:

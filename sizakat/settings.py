@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+from datetime import timedelta
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", False)
+DEBUG = os.environ.get('DEBUG', False)
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split()
 
@@ -37,7 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
     'graphene_django',
+    'graphql_auth',
     'corsheaders',
     'sizakat.mustahik',
     'sizakat.transaction',
@@ -48,6 +52,9 @@ AUTH_USER_MODEL = 'account.User'
 
 GRAPHENE = {
     'SCHEMA': 'sizakat.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
 }
 
 MIDDLEWARE = [
@@ -61,6 +68,22 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'graphql_auth.backends.GraphQLAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+GRAPHQL_JWT = {
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_EXPIRATION_DELTA': timedelta(hours=1),
+}
+
+GRAPHQL_AUTH = {
+    'LOGIN_ALLOWED_FIELDS': ['email'],
+    'SEND_ACTIVATION_EMAIL': False,
+    'PASSWORD_RESET_PATH_ON_EMAIL': 'reset-password',
+}
+
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 60 * 60
 
@@ -69,10 +92,14 @@ CORS_ORIGIN_WHITELIST = os.environ.get(
 
 ROOT_URLCONF = 'sizakat.urls'
 
+RESET_PASSWORD_URL = os.environ.get(
+    'RESET_PASSWORD_URL', 'http://localhost:3000/reset-password/'
+)
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -155,5 +182,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ.get('GMAIL_USER').split()
-EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD').split()
+EMAIL_HOST_USER = os.environ.get('GMAIL_USER', 'email@mail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('GMAIL_PASSWORD', 'emailpass')
