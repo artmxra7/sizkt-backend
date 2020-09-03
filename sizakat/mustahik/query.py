@@ -11,7 +11,8 @@ class MustahikQuery(graphene.ObjectType):
     mustahiks = graphene.List(
         MustahikType,
         statuses=graphene.List(graphene.String),
-        name_contains=graphene.String()
+        name_contains=graphene.String(),
+        data_sources=graphene.List(graphene.ID)
     )
     mustahik = graphene.Field(MustahikType, id=graphene.ID(required=True))
     data_sources = graphene.List(
@@ -23,13 +24,20 @@ class MustahikQuery(graphene.ObjectType):
 
     def resolve_mustahiks(self, info, **kwargs):
         statuses = kwargs.get('statuses', None)
+        data_sources = kwargs.get('data_sources', None)
         name_contains = kwargs.get('name_contains', None)
         filter_query = Q()
 
         if statuses and len(statuses) > 0:
-            filter_query |= reduce(
+            filter_query &= reduce(
                 lambda a, b: a | b,
                 [Q(status=status) for status in statuses]
+            )
+
+        if data_sources and len(data_sources) > 0:
+            filter_query &= reduce(
+                lambda a, b: a | b,
+                [Q(data_source=data_source) for data_source in data_sources]
             )
 
         if name_contains:

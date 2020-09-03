@@ -361,6 +361,44 @@ class MustahikGraphQLTestCase(GraphQLTestCase):
         content = json.loads(response.content)
         self.assertEqual(len(content['data']['mustahiks']), 0)
 
+    def test_mustahiks_query_if_data_sources_provided_should_return_mustahiks_with_coresponding_data_sources(self):
+        dataSourceId = DataSource.objects.all()[0].id
+        response = self.query(
+            '''
+            query mustahiks($dataSources: [ID]) {
+                mustahiks(dataSources: $dataSources) {
+                    dataSource {
+                        id
+                    }
+                }
+            }
+            ''',
+            op_name='mustahiks',
+            variables={'dataSources': [dataSourceId]}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(int(content['data']['mustahiks'][0]['dataSource']['id']), dataSourceId)
+
+    def test_mustahiks_query_if_data_sources_provided_has_no_corresponding_mustahiks_it_should_return_empty_list(self):
+        dataSourceId = 99999
+        response = self.query(
+            '''
+            query mustahiks($dataSources: [ID]) {
+                mustahiks(dataSources: $dataSources) {
+                    dataSource {
+                        id
+                    }
+                }
+            }
+            ''',
+            op_name='mustahiks',
+            variables={'dataSources': [dataSourceId]}
+        )
+
+        content = json.loads(response.content)
+        self.assertEqual(len(content['data']['mustahiks']), 0)
+
     def test_data_sources_query_should_return_list_data_sources(self):
         response = self.query(
             '''
