@@ -13,6 +13,9 @@ class MustahikType(DjangoObjectType):
 
     age = graphene.Int(source='calculate_age')
 
+    def resolve_photo(self, info, **kwargs):
+        return self.photo and info.context.build_absolute_uri(self.photo.url)
+
 
 class DataSourceInstitusiType(DjangoObjectType):
     class Meta:
