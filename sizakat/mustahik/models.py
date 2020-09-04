@@ -33,7 +33,7 @@ class Mustahik(models.Model):
     birthdate = models.DateField()
     status = models.CharField(max_length=32, choices=Status.choices)
     gender = models.CharField(max_length=1, choices=Gender.choices)
-    photo = models.FileField(
+    photo = models.ImageField(
         upload_to=os.path.join('images', 'mustahik'),
         default=os.path.join('images', 'default_photo.jpg')
     )

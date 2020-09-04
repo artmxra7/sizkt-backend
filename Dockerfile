@@ -8,7 +8,7 @@ ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt .
 
 RUN apk add --no-cache --virtual .build-deps \
-    gcc postgresql-dev libpq musl-dev \
+    gcc postgresql-dev libpq musl-dev jpeg-dev zlib-dev\
     && pip install --upgrade pip \
     && pip install -r requirements.txt \
     && find /usr/local \
