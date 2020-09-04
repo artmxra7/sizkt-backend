@@ -1,3 +1,17 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import (
+    Mustahik,
+    DataSource,
+    DataSourceWarga,
+    DataSourceInstitusi,
+    DataSourcePekerja,
+)
+
+admin.site.register([
+    Mustahik,
+    DataSource,
+    DataSourceWarga,
+    DataSourceInstitusi,
+    DataSourcePekerja,
+])
