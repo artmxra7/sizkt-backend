@@ -9,6 +9,7 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - staticfiles:/var/www/html/static/
+      - mediafiles:/var/www/html/media/
     depends_on:
       - backend
 
@@ -20,6 +21,7 @@ services:
     volumes:
       - ./:/app/backend/
       - staticfiles:/app/backend/staticfiles/
+      - mediafiles:/app/backend/mediafiles/
     env_file:
       - .env
     environment:
@@ -39,3 +41,4 @@ services:
 volumes:
   postgres_data:
   staticfiles:
+  mediafiles:
