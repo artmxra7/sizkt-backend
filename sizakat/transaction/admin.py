@@ -1,7 +1,10 @@
 from django.contrib import admin
 
-from .models import ZakatType
+from .models import *
 
 admin.site.register([
-    ZakatType
+    ZakatType,
+    Transaction,
+    ZakatTransaction,
+    Muzakki
 ])
