@@ -2,6 +2,8 @@ import graphene
 
 from graphene_django import DjangoObjectType
 
+from .account.mutations import AccountMutation
+from .account.query import AccountQuery
 from .mustahik.mutations import (
     MustahikMutation, DeleteMustahik, DataSourceMutation,
     DataSourceWargaMutation, DataSourceInstitusiMutation,
@@ -18,14 +20,14 @@ ABOUT = ('Si Zakat merupakan sistem informasi untuk membantu masjid dalam '
          'yang dipimpin oleh Prof. Dr. Wisnu Jatmiko.')
 
 
-class Query(MustahikQuery, TransactionQuery, graphene.ObjectType):
+class Query(AccountQuery, MustahikQuery, TransactionQuery, graphene.ObjectType):
     about = graphene.String()
 
     def resolve_about(self, info):
         return ABOUT
 
 
-class Mutation(graphene.ObjectType):
+class Mutation(AccountMutation, graphene.ObjectType):
     mustahik_mutation = MustahikMutation.Field()
     delete_mustahik = DeleteMustahik.Field()
     data_source_mutation = DataSourceMutation.Field()
