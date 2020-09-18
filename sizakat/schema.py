@@ -1,7 +1,5 @@
 import graphene
 
-from graphene_django import DjangoObjectType
-
 from .account.mutations import AccountMutation
 from .account.query import AccountQuery
 from .mustahik.mutations import (

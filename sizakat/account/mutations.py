@@ -2,6 +2,7 @@ import graphene
 
 from graphql_auth import mutations
 
+
 class AccountMutation(graphene.ObjectType):
     register = mutations.Register.Field()
     verify_account = mutations.VerifyAccount.Field()
@@ -12,7 +13,7 @@ class AccountMutation(graphene.ObjectType):
     update_account = mutations.UpdateAccount.Field()
     archive_account = mutations.ArchiveAccount.Field()
     delete_account = mutations.DeleteAccount.Field()
-    send_secondary_email_activation =  mutations.SendSecondaryEmailActivation.Field()
+    send_secondary_email_activation = mutations.SendSecondaryEmailActivation.Field()
     verify_secondary_email = mutations.VerifySecondaryEmail.Field()
     swap_emails = mutations.SwapEmails.Field()
     remove_secondary_email = mutations.RemoveSecondaryEmail.Field()
