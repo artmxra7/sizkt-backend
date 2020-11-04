@@ -3,7 +3,7 @@ coverage==5.2.1
 Django==3.0.7
 django-cors-headers==3.4.0
 django-filter==2.3.0
-django-graphql-auth==0.3.11
+django-graphql-auth==0.3.14
 django-graphql-jwt==0.3.1
 freezegun==1.0.0
 graphene-django==2.10.1

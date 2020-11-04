@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -26,6 +25,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get("DEBUG", False)
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split()
+
+FRONTEND_BASE_URL = os.environ.get('FRONTEND_BASE_URL', 'http://localhost:3000')
 
 
 # Application definition
@@ -58,15 +59,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ORIGIN_WHITELIST = os.environ.get(
-    'CORS_ORIGIN_WHITELIST', 'http://localhost:3000').split()
+CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST', FRONTEND_BASE_URL).split()
 
 ROOT_URLCONF = 'sizakat.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, "templates")],
+        'DIRS': [os.path.join(BASE_DIR, 'sizakat', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -201,4 +201,14 @@ GRAPHQL_JWT = {
     ],
     'JWT_VERIFY_EXPIRATION': True,
     'JWT_LONG_RUNNING_REFRESH_TOKEN': True,
+}
+
+
+# Django GraphQL Auth
+# https://django-graphql-auth.readthedocs.io/en/latest/settings/
+
+GRAPHQL_AUTH = {
+    'EMAIL_TEMPLATE_VARIABLES': {
+        'frontend_base_url': FRONTEND_BASE_URL,
+    }
 }
